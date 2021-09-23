@@ -1,25 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+// This example shows you how to set up React Stripe.js and use Elements.
+// Learn how to accept a payment using the official Stripe docs.
+// https://www.stripe.com/docs/payments/integration-builder
 
-function App() {
+import React from "react";
+import CheckoutForm from './CheckoutForm';
+import './styles.css';
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+ 
+    <CheckoutForm />
+    
   );
-}
+};
 
 export default App;
+
