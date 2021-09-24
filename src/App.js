@@ -3,15 +3,28 @@
 // https://www.stripe.com/docs/payments/integration-builder
 
 import React from "react";
+import { Route,  BrowserRouter as Router,Switch} from 'react-router-dom'
 import CheckoutForm from './CheckoutForm';
-import './styles.css';
-const App = () => {
+import NotFound from "./NotFound";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+const RouterPage=()=>{
   return (
- 
-    <CheckoutForm />
-    
-  );
-};
+    <Router>
+      <Switch>
+      <Route exact path='/' component={CheckoutForm}  />
+      <Route  component={NotFound} />
+      </Switch>
+    </Router>
+  )
+
+}
+
+
+
+const App = () => <RouterPage />
+
 
 export default App;
 

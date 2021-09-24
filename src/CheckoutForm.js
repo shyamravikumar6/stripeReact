@@ -1,6 +1,5 @@
 import React,{useState} from 'react';
 import { loadStripe } from "@stripe/stripe-js";
-import axios from 'axios';
 import {
   CardElement,
   Elements,
@@ -9,6 +8,7 @@ import {
 } from "@stripe/react-stripe-js";
 import "./styles.css";
 import Field from './Field';
+import PaymentStatus from './PaymentStatus';
 const stripePromise = loadStripe("pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT");
 
 
@@ -80,12 +80,13 @@ const ErrorMessage = ({ children }) => (
 //   </button>
 // );
 
-const CheckoutForm = () => {
+const CheckoutForm = ({client}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [paymentStatus,setPaymentStatus]=useState({});
   // const [paymentMethod, setPaymentMethod] = useState(null);
   const [billingDetails, setBillingDetails] = useState({
     email: "",
@@ -111,14 +112,26 @@ const CheckoutForm = () => {
       setProcessing(true);
     }
 
-    // const payload = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card: elements.getElement(CardElement),
-    //   billing_details: billingDetails
-    // });
+
    try{ 
-    const res = await  axios.post('http://localhost:3000/api/checkout',billingDetails,{withCredentials:'true'});
-    console.log(res,'2323');
+    const result = await stripe.confirmCardPayment(client, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: billingDetails
+      }
+    });
+
+    if (result.error) {
+      // Show error to your customer (e.g., insufficient funds)
+      setError(result.error.message);
+      setPaymentStatus({fail: true,errormessage:result.error.message});
+   
+    } else {
+      // The payment has been processed!
+      if (result.paymentIntent.status === 'succeeded') {
+          setPaymentStatus({success: true});
+      }
+    }
     setProcessing(false);
    }
    catch (e) {
@@ -127,8 +140,8 @@ const CheckoutForm = () => {
    }
   };
 
-
-  return (
+  if(Object.keys(paymentStatus).length) return <PaymentStatus status={paymentStatus} />;
+  return   (
     <form className="Form" onSubmit={handleSubmit}>
       <fieldset className="FormGroup">
         <Field
@@ -193,14 +206,11 @@ const ELEMENTS_OPTIONS = {
   ]
 };
 
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
-
-
 const ElementStripe=()=>{ 
   const queryString = window.location.search;
   console.log(queryString);
    if(!queryString||!queryString.includes('client_secret')|| !String(queryString).split('=')[1] ) {   window.location.href  ='http://localhost:3000/failed';}
+   const client_secret=String(queryString).split('=')[1] ;
   return (
     <div>
      <div style={{height:'inherit',width:'400px' ,display:'flex', justifyContent:'center'}}>
@@ -210,9 +220,10 @@ const ElementStripe=()=>{
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div>
-    <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-    <CheckoutForm />
+ <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
+    <CheckoutForm  client={client_secret} />
   </Elements>
+   
   </div>
   )
 
