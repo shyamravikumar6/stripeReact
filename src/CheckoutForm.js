@@ -1,39 +1,57 @@
-import React,{useState} from 'react';
+import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   CardElement,
   Elements,
   useElements,
-  useStripe
+  useStripe,
 } from "@stripe/react-stripe-js";
-import "./styles.css";
-import Field from './Field';
-import PaymentStatus from './PaymentStatus';
-const stripePromise = loadStripe("pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT");
+import { Card, CardBody, FormGroup } from "reactstrap";
+// import './styles.css'
+import Field from "./Field";
+import PaymentStatus from "./PaymentStatus";
+const stripePromise = loadStripe(
+  "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
+);
 
-
+const Svg = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="30"
+    height="30"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+);
 const CARD_OPTIONS = {
   iconStyle: "solid",
   style: {
     base: {
       iconColor: "#c4f0ff",
-      color: "#fff",
+      color: "#000",
       fontWeight: 500,
       fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
       fontSize: "16px",
       fontSmoothing: "antialiased",
       ":-webkit-autofill": {
-        color: "#fce883"
+        color: "#fce883",
       },
       "::placeholder": {
-        color: "#87bbfd"
-      }
+        color: "#87bbfd",
+      },
     },
     invalid: {
       iconColor: "#ffc7ee",
-      color: "#ffc7ee"
-    }
-  }
+      color: "#ffc7ee",
+    },
+  },
 };
 
 const CardField = ({ onChange }) => (
@@ -41,7 +59,6 @@ const CardField = ({ onChange }) => (
     <CardElement options={CARD_OPTIONS} onChange={onChange} />
   </div>
 );
-
 
 const SubmitButton = ({ processing, error, children, disabled }) => (
   <button
@@ -80,18 +97,18 @@ const ErrorMessage = ({ children }) => (
 //   </button>
 // );
 
-const CheckoutForm = ({client}) => {
+const CheckoutForm = ({ client }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [paymentStatus,setPaymentStatus]=useState({});
+  const [paymentStatus, setPaymentStatus] = useState({});
   // const [paymentMethod, setPaymentMethod] = useState(null);
   const [billingDetails, setBillingDetails] = useState({
     email: "",
     phone: "",
-    name: ""
+    name: "",
   });
 
   const handleSubmit = async (event) => {
@@ -112,75 +129,75 @@ const CheckoutForm = ({client}) => {
       setProcessing(true);
     }
 
+    try {
+      const result = await stripe.confirmCardPayment(client, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: billingDetails,
+        },
+      });
 
-   try{ 
-    const result = await stripe.confirmCardPayment(client, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-        billing_details: billingDetails
+      if (result.error) {
+        // Show error to your customer (e.g., insufficient funds)
+        setError(result.error.message);
+        setPaymentStatus({ fail: true, errormessage: result.error.message });
+      } else {
+        // The payment has been processed!
+        if (result.paymentIntent.status === "succeeded") {
+          setPaymentStatus({ success: true });
+        }
       }
-    });
-
-    if (result.error) {
-      // Show error to your customer (e.g., insufficient funds)
-      setError(result.error.message);
-      setPaymentStatus({fail: true,errormessage:result.error.message});
-   
-    } else {
-      // The payment has been processed!
-      if (result.paymentIntent.status === 'succeeded') {
-          setPaymentStatus({success: true});
-      }
+      setProcessing(false);
+    } catch (e) {
+      console.log(e, "343");
+      setProcessing(false);
     }
-    setProcessing(false);
-   }
-   catch (e) {
-     console.log(e,'343');
-     setProcessing(false);
-   }
   };
 
-  if(Object.keys(paymentStatus).length) return <PaymentStatus status={paymentStatus} />;
-  return   (
+  if (Object.keys(paymentStatus).length)
+    return <PaymentStatus status={paymentStatus} />;
+  return (
     <form className="Form" onSubmit={handleSubmit}>
-      <fieldset className="FormGroup">
-        <Field
-          label="Name"
-          id="name"
-          type="text"
-          placeholder="Jane Doe"
-          required
-          autoComplete="name"
-          value={billingDetails.name}
-          onChange={(e) => {
-            setBillingDetails({ ...billingDetails, name: e.target.value });
-          }}
-        />
-        <Field
-          label="Email"
-          id="email"
-          type="email"
-          placeholder="janedoe@gmail.com"
-          required
-          autoComplete="email"
-          value={billingDetails.email}
-          onChange={(e) => {
-            setBillingDetails({ ...billingDetails, email: e.target.value });
-          }}
-        />
-        <Field
-          label="Phone"
-          id="phone"
-          type="tel"
-          placeholder="(941) 555-0123"
-          required
-          autoComplete="tel"
-          value={billingDetails.phone}
-          onChange={(e) => {
-            setBillingDetails({ ...billingDetails, phone: e.target.value });
-          }}
-        />
-      </fieldset>
+      <Field
+        label="Name"
+        id="name"
+        type="text"
+        placeholder="Jane Doe"
+        required
+        className="FormGroup FormRow"
+        autoComplete="name"
+        value={billingDetails.name}
+        onChange={(e) => {
+          setBillingDetails({ ...billingDetails, name: e.target.value });
+        }}
+      />
+      <Field
+        label="Email"
+        id="email"
+        type="email"
+        placeholder="janedoe@gmail.com"
+        required
+        className="FormGroup FormRow"
+        autoComplete="email"
+        value={billingDetails.email}
+        onChange={(e) => {
+          setBillingDetails({ ...billingDetails, email: e.target.value });
+        }}
+      />
+      <Field
+        label="Phone"
+        id="phone"
+        type="tel"
+        className=" FormGroup FormRow"
+        placeholder="(941) 555-0123"
+        required
+        autoComplete="tel"
+        value={billingDetails.phone}
+        onChange={(e) => {
+          setBillingDetails({ ...billingDetails, phone: e.target.value });
+        }}
+      />
+
       <fieldset className="FormGroup">
         <CardField
           onChange={(e) => {
@@ -189,10 +206,10 @@ const CheckoutForm = ({client}) => {
           }}
         />
       </fieldset>
+
       {error && <ErrorMessage>{error.message}</ErrorMessage>}
-      <SubmitButton  error={error} disabled={!stripe||processing
-      }>
-        Pay 
+      <SubmitButton error={error} disabled={!stripe || processing}>
+        Pay
       </SubmitButton>
     </form>
   );
@@ -201,34 +218,60 @@ const CheckoutForm = ({client}) => {
 const ELEMENTS_OPTIONS = {
   fonts: [
     {
-      cssSrc: "https://fonts.googleapis.com/css?family=Roboto"
-    }
-  ]
+      cssSrc: "https://fonts.googleapis.com/css?family=Roboto",
+    },
+  ],
 };
 
-const ElementStripe=()=>{ 
+const ElementStripe = () => {
   const queryString = window.location.search;
   console.log(queryString);
-   if(!queryString||!queryString.includes('client_secret')|| !String(queryString).split('=')[1] ) {   window.location.href  ='http://localhost:3000/failed';}
-   const client_secret=String(queryString).split('=')[1] ;
+  if (
+    !queryString ||
+    !queryString.includes("client_secret") ||
+    !String(queryString).split("=")[1]
+  ) {
+    // window.location.href  ='http://localhost:3000/failed';
+  }
+  const client_secret = String(queryString).split("=")[1];
   return (
-    <div>
-     <div style={{height:'inherit',width:'400px' ,display:'flex', justifyContent:'center'}}>
+    <div className="container">
+      <div className="sidebar">
+        <div className="sidebardiv">
+          <h1>heidsfsdfds</h1>
+          <h1>heidsfsdfds</h1>
+          <h1>heidsfsdfds</h1>
+          <h1>heidsfsdfds</h1>
+          <h1>heidsfsdfds</h1>
+
+          <div className="svgImg">
+            <Svg />
+          </div>
+          <div className="svgDiv" />
+          
+            <p>
+              Pay the above amount using Open Banking, Safe and Secure. You will
+              be navigated to your Selected Banking app to securely authenticate
+              and make the payment.
+            </p>
+        
+        </div>
+      </div>
+
+      {/* <div >
     <img alt="" width="150"
     src="https://api.zotto.z-payments.com/images/zotto_logo.png"
   
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
+    </div> */}
+      <div className="card-element">
+        <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
+          <CheckoutForm client={client_secret} />
+        </Elements>
+      </div>
     </div>
- <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-    <CheckoutForm  client={client_secret} />
-  </Elements>
-   
-  </div>
-  )
-
-}
+  );
+};
 
 export default ElementStripe;
-
-

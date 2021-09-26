@@ -8,14 +8,16 @@ const Field = ({
     required,
     autoComplete,
     value,
+    className,
+
     onChange
   }) => (
-    <div className="FormRow">
-      <label htmlFor={id} className="FormRowLabel">
+    <div  className={className}>
+      <label htmlFor={id} className='FormRowLabel'>
         {label}
       </label>
       <input
-        className="FormRowInput"
+        className='FormRowInput'
         id={id}
         type={type}
         placeholder={placeholder}
