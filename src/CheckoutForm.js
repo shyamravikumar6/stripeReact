@@ -15,7 +15,11 @@ import {
   TextField,
   Grid,
   Button,
-  CircularProgress
+  CircularProgress,
+  Typography,
+  FormControlLabel,
+  RadioGroup,
+  Radio
 } from "@material-ui/core";
 
 // import './styles.css'
@@ -202,57 +206,31 @@ const CheckoutForm = ({ client }) => {
     return <PaymentStatus status={paymentStatus} />;
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
-      {/* <Field
-        label="Name"
-        id="name"
-        type="text"
-        placeholder="Jane Doe"
-        required
-        className="FormGroup FormRow"
-        autoComplete="name"
-        value={billingDetails.name}
-        onChange={(e) => {
-          setBillingDetails({ ...billingDetails, name: e.target.value });
-        }}
-      /> */}
+     
+      <Grid container item xs={12} >
       
-       <TextField
-       className={classes.textfield}
-                label="Name"
-                name="name"
-                variant="outlined"
-                required
-                fullWidth
-                value={billingDetails.name}
-                onChange={e =>  setBillingDetails({ ...billingDetails, name: e.target.value })
-                }
-            />
-      <TextField
-       className={classes.textfield}
-                label="Email"
-                name="email"
-                variant="outlined"
-              
-                type='email'
-                typeof='email'
-                fullWidth
-                value={billingDetails.email}
-                onChange={e =>  setBillingDetails({ ...billingDetails, email: e.target.value })
-                }
-            />
-       <TextField
-       className={classes.textfield}
-                label="Phone"
-                name="phone"
-                variant="outlined"
-             
-                fullWidth
-                value={billingDetails.phone}
-                onChange={e =>  setBillingDetails({ ...billingDetails, phone: e.target.value })
-                }
-            />
+   
+
+      <Grid item xs={12} sm={3}>
+                <Typography variant="h4" color="">Payment </Typography>
+            </Grid>
+
+      
+            <RadioGroup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ds
+            row                                                                                             
+          aria-label="quiz"
+          name="cardtype"
+          value={billingDetails.cardtype}
+          onChange={e=>setBillingDetails({...billingDetails,cardtype:e.target.value})}
+        >
+          <FormControlLabel  variant="outlined" value="credit" control={<Radio />} label="Credit" />
+          <FormControlLabel  variant="outlined" value="debit" control={<Radio />} label="Debit" />
+        </RadioGroup>
+         
+ 
      <TextField
      className={classes.textfield}
+     style={{margin:"1rem 0"}}
                 label="Credit Card Number"
                 name="ccnumber"
                 variant="outlined"
@@ -269,8 +247,21 @@ const CheckoutForm = ({ client }) => {
 
                 onChange={(e)=>{setError(e.error);  setCardComplete(e.complete); }}
             />
-            <div className={classes.row}>
-        <Grid item xs={6} sm={5}>
+               <Grid  item xs={12} sm={12}  >
+       <TextField
+       className={classes.textfield}
+                label="Card Holder Name"
+                name="name"
+                variant="outlined"
+                required
+                fullWidth
+                value={billingDetails.name}
+                onChange={e =>  setBillingDetails({ ...billingDetails, name: e.target.value })
+                }
+            />
+             </Grid>
+            <Grid item container xs={12} justify="space-between" style={{margin:"1rem 0"}}>
+        <Grid item xs={4} sm={4}>
       <TextField
                className={classes.smalltextfield}
                 label="Expiration Date"
@@ -289,7 +280,7 @@ const CheckoutForm = ({ client }) => {
                 }}
             />
             </Grid>
-          <Grid item xs={6} sm={5}>
+          <Grid item xs={4} sm={4}>
             <TextField
                    className={classes.smalltextfield}
                 label="CVC"
@@ -307,7 +298,8 @@ const CheckoutForm = ({ client }) => {
                 }}
             />
       </Grid>
-      </div>
+      </Grid>
+      
 
       
       {/* <SubmitButton error={error} disabled={!stripe || processing}>
@@ -327,7 +319,7 @@ const CheckoutForm = ({ client }) => {
   
 }
 </Button>
-
+</Grid>
     </form>
   );
 };
