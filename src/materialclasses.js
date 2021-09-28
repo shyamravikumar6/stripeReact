@@ -23,7 +23,10 @@ import { makeStyles } from '@material-ui/core/styles';
         justifyContent: "space-around",
         width: "100%"
     },
-  
+    textfield: {
+        marginTop: "1rem",
+        marginBottom: "1rem",
+    },
    
     smalltextfield:{
         

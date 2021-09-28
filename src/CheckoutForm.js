@@ -1,21 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
+import {style} from './materialclasses';
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
+  CardNumberElement,
+     CardExpiryElement,
+     CardCvcElement,
 } from "@stripe/react-stripe-js";
-import { Card, CardBody, FormGroup } from "reactstrap";
+
+import {
+  TextField,
+  Grid,
+  Button,
+  CircularProgress
+} from "@material-ui/core";
+
 // import './styles.css'
-import Field from "./Field";
+
 import PaymentStatus from "./PaymentStatus";
 import defaultImage from './user_image.png';
+import StripeInput from "./StripeInput";
 const stripePromise = loadStripe(
   "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
 );
 
-const InvalidLink=()=>(<div className="invalid_link"><div className="card-element"><p>Invalid data</p></div> </div>)
+// const cardLogo=[
+//   'Maestro','Visa'
+// ];
+
+// const InvalidLink=()=>(<div className="invalid_link"><div className="card-element"><p>Invalid data</p></div> </div>)
 const Svg = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -32,48 +48,50 @@ const Svg = () => (
     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
 );
-const CARD_OPTIONS = {
-  iconStyle: "solid",
-  style: {
-    base: {
-      iconColor: "#c4f0ff",
-      color: "#fff",
-      margin:0,
-      fontWeight: 500,
-      fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
-      fontSize: "16px",
-      fontSmoothing: "antialiased",
-      ":-webkit-autofill": {
-        color: "#fce883"
-      },
-      "::placeholder": {
-        color: "#87bbfd"
-      }
-    },
-    invalid: {
-      iconColor: "#ffc7ee",
-      color: "#ffc7ee"
-    }
-  }
-};
-const CardField = ({ onChange }) => (
-  <div className="FormRow">
-    <CardElement options={CARD_OPTIONS} onChange={onChange} />
-  </div>
-);
+// const CARD_OPTIONS = {
+//   iconStyle: "solid",
+//   style: {
+//     base: {
+//       iconColor: "#c4f0ff",
+//       color: "#fff",
+//       margin:0,
+//       fontWeight: 500,
+//       fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
+//       fontSize: "16px",
+//       fontSmoothing: "antialiased",
+//       ":-webkit-autofill": {
+//         color: "#fce883"
+//       },
+//       "::placeholder": {
+//         color: "#87bbfd"
+//       }
+//     },
+//     invalid: {
+//       iconColor: "#ffc7ee",
+//       color: "#ffc7ee"
+//     }
+//   }
+// };
+// const CardField = ({ onChange }) => (
+//   <div className="FormRow">
+//     <CardElement options={CARD_OPTIONS} onChange={onChange} />
+//   </div>
+// );
 
-const SubmitButton = ({ processing, error, children, disabled }) => (
-  <button
-    className={`SubmitButton ${error ? "SubmitButton--error" : ""}`}
-    type="submit"
-    disabled={processing || disabled}
-  >
-    {processing ? "Processing..." : children}
-  </button>
-);
+// const SubmitButton = ({ processing, error, children, disabled }) => (
+//   <button
+//     className={`SubmitButton ${error ? "SubmitButton--error" : ""}`}
+//     type="submit"
+//     disabled={processing || disabled}
+//   >
+//     {processing ? "Processing..." : children}
+//   </button>
+// );
 
-const ErrorMessage = ({ children }) => (
-  <div className="ErrorMessage" role="alert">
+const ErrorMessage = ({ error }) => {
+  console.log(error);
+  return (
+  <div  role="alert">
     <svg width="16" height="16" viewBox="0 0 17 17">
       <path
         fill="#FFF"
@@ -84,9 +102,11 @@ const ErrorMessage = ({ children }) => (
         d="M8.5,7.29791847 L6.12604076,4.92395924 C5.79409512,4.59201359 5.25590488,4.59201359 4.92395924,4.92395924 C4.59201359,5.25590488 4.59201359,5.79409512 4.92395924,6.12604076 L7.29791847,8.5 L4.92395924,10.8739592 C4.59201359,11.2059049 4.59201359,11.7440951 4.92395924,12.0760408 C5.25590488,12.4079864 5.79409512,12.4079864 6.12604076,12.0760408 L8.5,9.70208153 L10.8739592,12.0760408 C11.2059049,12.4079864 11.7440951,12.4079864 12.0760408,12.0760408 C12.4079864,11.7440951 12.4079864,11.2059049 12.0760408,10.8739592 L9.70208153,8.5 L12.0760408,6.12604076 C12.4079864,5.79409512 12.4079864,5.25590488 12.0760408,4.92395924 C11.7440951,4.59201359 11.2059049,4.59201359 10.8739592,4.92395924 L8.5,7.29791847 L8.5,7.29791847 Z"
       />
     </svg>
-    {children}
+    {error}
   </div>
-);
+)  
+}
+
 
 // const ResetButton = ({ onClick }) => (
 //   <button type="button" className="ResetButton" onClick={onClick}>
@@ -101,18 +121,21 @@ const ErrorMessage = ({ children }) => (
 
 const CheckoutForm = ({ client }) => {
   const stripe = useStripe();
+  
+  const classes = style();
   const elements = useElements();
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState({});
-  const [frame,setIframe]=useState(false);
+  // const [frame,setIframe]=useState(false);
   // const [paymentMethod, setPaymentMethod] = useState(null);
 
   useEffect(()=>{
+    console.log(stripe);
     window.addEventListener('message', function(ev) {
       if (ev.data === '3DS-authentication-complete') {
-        setIframe(false);
+        // setIframe(false);
       }
     }, false);
   })
@@ -133,16 +156,22 @@ const CheckoutForm = ({ client }) => {
 
     if (error) {
       elements.getElement("card").focus();
+      
       return;
     }
 
     if (cardComplete) {
       setProcessing(true);
     }
-
+  // console.log('343',billingDetails,elements.getElement(CardNumberElement));
     try {
-      const {client_secret}= await stripe.payment
-      const result = await stripe.confirmCardPayment(client, {
+      const {client_secret} = await stripe.paymentIntents.create({
+        amount: 2000,
+        currency: 'usd',
+        payment_method_types: ['card'],
+      });
+      
+      const result = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: billingDetails,
@@ -172,8 +201,8 @@ const CheckoutForm = ({ client }) => {
   if (Object.keys(paymentStatus).length)
     return <PaymentStatus status={paymentStatus} />;
   return (
-    <form className="Form" onSubmit={handleSubmit}>
-      <Field
+    <form className={classes.form} onSubmit={handleSubmit}>
+      {/* <Field
         label="Name"
         id="name"
         type="text"
@@ -185,47 +214,120 @@ const CheckoutForm = ({ client }) => {
         onChange={(e) => {
           setBillingDetails({ ...billingDetails, name: e.target.value });
         }}
-      />
-      <Field
-        label="Email"
-        id="email"
-        type="email"
-        placeholder="janedoe@gmail.com"
-        required
-        className="FormGroup FormRow"
-        autoComplete="email"
-        value={billingDetails.email}
-        onChange={(e) => {
-          setBillingDetails({ ...billingDetails, email: e.target.value });
-        }}
-      />
-      <Field
-        label="Phone"
-        id="phone"
-        type="tel"
-        className=" FormGroup FormRow"
-        placeholder="(941) 555-0123"
-        required
-        autoComplete="tel"
-        value={billingDetails.phone}
-        onChange={(e) => {
-          setBillingDetails({ ...billingDetails, phone: e.target.value });
-        }}
-      />
+      /> */}
+      
+       <TextField
+       className={classes.textfield}
+                label="Name"
+                name="name"
+                variant="outlined"
+                required
+                fullWidth
+                value={billingDetails.name}
+                onChange={e =>  setBillingDetails({ ...billingDetails, name: e.target.value })
+                }
+            />
+      <TextField
+       className={classes.textfield}
+                label="Email"
+                name="email"
+                variant="outlined"
+              
+                type='email'
+                typeof='email'
+                fullWidth
+                value={billingDetails.email}
+                onChange={e =>  setBillingDetails({ ...billingDetails, email: e.target.value })
+                }
+            />
+       <TextField
+       className={classes.textfield}
+                label="Phone"
+                name="phone"
+                variant="outlined"
+             
+                fullWidth
+                value={billingDetails.phone}
+                onChange={e =>  setBillingDetails({ ...billingDetails, phone: e.target.value })
+                }
+            />
+     <TextField
+     className={classes.textfield}
+                label="Credit Card Number"
+                name="ccnumber"
+                variant="outlined"
+                required
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                    inputComponent: StripeInput,
+                    inputProps: {
+                        component: CardNumberElement
+                    },
 
-      <fieldset className="FormGroup">
-        <CardField
-          onChange={(e) => {
-            setError(e.error);
-            setCardComplete(e.complete);
-          }}
-        />
-      </fieldset>
+                }}
 
-      {error && <ErrorMessage>{error.message}</ErrorMessage>}
-      <SubmitButton error={error} disabled={!stripe || processing}>
+                onChange={(e)=>{setError(e.error);  setCardComplete(e.complete); }}
+            />
+            <div className={classes.row}>
+        <Grid item xs={6} sm={5}>
+      <TextField
+               className={classes.smalltextfield}
+                label="Expiration Date"
+                name="ccexp"
+                variant="outlined"
+                disabled={error}
+                required
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                    inputComponent: StripeInput,
+                    inputProps: {
+                        component: CardExpiryElement,
+                       
+                    },
+                }}
+            />
+            </Grid>
+          <Grid item xs={6} sm={5}>
+            <TextField
+                   className={classes.smalltextfield}
+                label="CVC"
+                name="cvc"
+                variant="outlined"
+                required
+                disabled={error}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                    inputComponent: StripeInput,
+                    inputProps: {
+                        component: CardCvcElement
+                    },
+                }}
+            />
+      </Grid>
+      </div>
+
+      
+      {/* <SubmitButton error={error} disabled={!stripe || processing}>
        {processing?'Processing....':'Pay'}
-      </SubmitButton>
+      </SubmitButton> */}
+      {error&&<ErrorMessage  error={error.message} />}
+      <Button variant="contained"
+  color="primary"
+  className={classes.button}
+  type="submit"
+  disabled={!stripe||processing}
+>
+{
+  processing
+  ?
+  <CircularProgress size={24} /> :'Pay'
+  
+}
+</Button>
+
     </form>
   );
 };
@@ -241,38 +343,44 @@ const ELEMENTS_OPTIONS = {
 const ElementStripe = () => {
   const queryString = window.location.search;
   console.log(queryString);
-  if (
-    !queryString ||
-    !queryString.includes("client_secret") ||
-    !String(queryString).split("=")[1]
-  ) {
-         return <InvalidLink />   ;
-          // window.location.href  ='http://localhost:3000/failed';
-  }
-  const client_secret = String(queryString).split("=")[1];
+  // if (
+  //   !queryString ||
+  //   !queryString.includes("client_secret") ||
+  //   !String(queryString).split("=")[1]
+  // ) {
+  //        return <InvalidLink />   ;
+  //         // window.location.href  ='http://localhost:3000/failed';
+  // }
+  
   return (
     <div className="container">
       <div className="mobilediv">
         <div>
-        <img  src={defaultImage} className="imageDiv" />
+        <img  src={defaultImage}  alt='hello' className="imageDiv" />
           </div>
           <div >
-          <h4>Amount</h4>
-          <span>$7.0</span>
+          <p className='amount-text'>Payment Ref</p>
+          <h4 className='amount'>2781</h4>
+          <p className='amount-text' style={{marginTop:'1rem'}}>Amount</p>
+          <h4 className='amount'>$ 7.00</h4>
           </div>
       </div>
       <div className="sidebar">
         <div className="sidebardiv">
-          <img  src={defaultImage} className="imageDiv" />
-          <h2 className='amount-text'>Amount</h2>
-          <h3 className='amount'>$7.0</h3>
+          <img  src={defaultImage}  alt='hello' className="imageDiv" />
+          <p className='amount-text'>Payment Ref</p>
+          <h4 className='amount'>2781</h4>
+          <p className='amount-text'>Amount</p>
+          <h4 className='amount'>$ 7.00</h4>
           <div className="svgDiv" />
           <div className="svgImg">
             <Svg />
           </div>
-        
+          <Grid container item xs={12} sm={9} justify="space-between" style={{marginTop:'2rem'}} >
+                {/* {cardLogo.map(e => <img key={e} src={import(`./${e}.png`)} alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />)} */}
+            </Grid>
           
-            <p>
+            <p className='secure-text'>
               Pay the above amount using Open Banking, Safe and Secure. You will
               be navigated to your Selected Banking app to securely authenticate
               and make the payment.
@@ -290,7 +398,7 @@ const ElementStripe = () => {
     </div> */}
       <div className="card-element">
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-          <CheckoutForm client={client_secret} />
+          <CheckoutForm  />
         </Elements>
       </div>
     </div>
@@ -298,3 +406,4 @@ const ElementStripe = () => {
 };
 
 export default ElementStripe;
+
