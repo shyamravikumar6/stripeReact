@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   CardElement,
@@ -10,10 +10,12 @@ import { Card, CardBody, FormGroup } from "reactstrap";
 // import './styles.css'
 import Field from "./Field";
 import PaymentStatus from "./PaymentStatus";
+import defaultImage from './user_image.png';
 const stripePromise = loadStripe(
   "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
 );
 
+const InvalidLink=()=>(<div className="invalid_link"><div className="card-element"><p>Invalid data</p></div> </div>)
 const Svg = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -35,25 +37,25 @@ const CARD_OPTIONS = {
   style: {
     base: {
       iconColor: "#c4f0ff",
-      color: "#000",
+      color: "#fff",
+      margin:0,
       fontWeight: 500,
       fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
       fontSize: "16px",
       fontSmoothing: "antialiased",
       ":-webkit-autofill": {
-        color: "#fce883",
+        color: "#fce883"
       },
       "::placeholder": {
-        color: "#87bbfd",
-      },
+        color: "#87bbfd"
+      }
     },
     invalid: {
       iconColor: "#ffc7ee",
-      color: "#ffc7ee",
-    },
-  },
+      color: "#ffc7ee"
+    }
+  }
 };
-
 const CardField = ({ onChange }) => (
   <div className="FormRow">
     <CardElement options={CARD_OPTIONS} onChange={onChange} />
@@ -104,7 +106,16 @@ const CheckoutForm = ({ client }) => {
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState({});
+  const [frame,setIframe]=useState(false);
   // const [paymentMethod, setPaymentMethod] = useState(null);
+
+  useEffect(()=>{
+    window.addEventListener('message', function(ev) {
+      if (ev.data === '3DS-authentication-complete') {
+        setIframe(false);
+      }
+    }, false);
+  })
   const [billingDetails, setBillingDetails] = useState({
     email: "",
     phone: "",
@@ -130,13 +141,14 @@ const CheckoutForm = ({ client }) => {
     }
 
     try {
+      const {client_secret}= await stripe.payment
       const result = await stripe.confirmCardPayment(client, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: billingDetails,
         },
       });
-
+      console.log(result);
       if (result.error) {
         // Show error to your customer (e.g., insufficient funds)
         setError(result.error.message);
@@ -146,10 +158,13 @@ const CheckoutForm = ({ client }) => {
         if (result.paymentIntent.status === "succeeded") {
           setPaymentStatus({ success: true });
         }
+        else if(result.paymentIntent.status === 'requires_payment_method'){
+
+        }
       }
       setProcessing(false);
     } catch (e) {
-      console.log(e, "343");
+      // console.log(e, "343");
       setProcessing(false);
     }
   };
@@ -209,7 +224,7 @@ const CheckoutForm = ({ client }) => {
 
       {error && <ErrorMessage>{error.message}</ErrorMessage>}
       <SubmitButton error={error} disabled={!stripe || processing}>
-        Pay
+       {processing?'Processing....':'Pay'}
       </SubmitButton>
     </form>
   );
@@ -231,30 +246,38 @@ const ElementStripe = () => {
     !queryString.includes("client_secret") ||
     !String(queryString).split("=")[1]
   ) {
-    // window.location.href  ='http://localhost:3000/failed';
+         return <InvalidLink />   ;
+          // window.location.href  ='http://localhost:3000/failed';
   }
   const client_secret = String(queryString).split("=")[1];
   return (
     <div className="container">
+      <div className="mobilediv">
+        <div>
+        <img  src={defaultImage} className="imageDiv" />
+          </div>
+          <div >
+          <h4>Amount</h4>
+          <span>$7.0</span>
+          </div>
+      </div>
       <div className="sidebar">
         <div className="sidebardiv">
-          <h1>heidsfsdfds</h1>
-          <h1>heidsfsdfds</h1>
-          <h1>heidsfsdfds</h1>
-          <h1>heidsfsdfds</h1>
-          <h1>heidsfsdfds</h1>
-
+          <img  src={defaultImage} className="imageDiv" />
+          <h2 className='amount-text'>Amount</h2>
+          <h3 className='amount'>$7.0</h3>
+          <div className="svgDiv" />
           <div className="svgImg">
             <Svg />
           </div>
-          <div className="svgDiv" />
+        
           
             <p>
               Pay the above amount using Open Banking, Safe and Secure. You will
               be navigated to your Selected Banking app to securely authenticate
               and make the payment.
             </p>
-        
+         <span className="linkstyle" >back to merchant</span>
         </div>
       </div>
 

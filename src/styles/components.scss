@@ -19,8 +19,10 @@
 .card-element{
   @include card;
    height:50%;
-   padding:2em;
-   margin:7rem auto ;
+   padding:3em 2em;
+   margin:auto 20em ;
+   flex:1;
+
 
    
 }

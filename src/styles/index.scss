@@ -2,6 +2,18 @@
 $theme:#b593aa;
 
 
+.invalid_link{
+display:flex;
+justify-content:center;
+align-items:center;
+text-align: center;
+color:red;
+
+}
+
+.invalid_link>.card-element{
+  margin-top:15em;
+}
 
 
 
@@ -16,6 +28,10 @@ background-color:$theme;
   position:relative;
  
 }
+.mobilediv{
+  display:none;
+}
+
 
 .sidebardiv{
   margin:auto;
@@ -24,16 +40,42 @@ background-color:$theme;
   justify-content:center;
   align-items:center;  
   text-align: center;
+
+ 
+}
+
+.sidebardiv > p,h3,h2{
+  color:#6e6b7b;
+
+}
+
+.sidebardiv > p { 
+   margin:0;
+   padding:0;
+}
+
+.amount-text {
+margin-top: 3rem;
+ margin-bottom: 0;
+}
+
+.amount{
+  margin:0 ;
+  margin-bottom: 3rem;
+  padding:0;
 }
 
 .container{
   display:flex;   
+  margin:0;
   
     
 }
 .svgDiv{
   border: 0;
+  margin-bottom: 2rem;
   border-top: 1px solid #ebe9f1;
+  width: 100%;
   
 }
 
@@ -62,7 +104,7 @@ html {
   font-weight: 500;
   font-style: normal;
   text-rendering: optimizeLegibility;
-  /* height: 100%; */
+   height: 100%; 
 }
 
 body {
@@ -70,12 +112,12 @@ body {
   margin: 0;
 }
 
-/* #root {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} */
+//  #root {
+//   height: 100%;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }   
 
 .card{
   background-color:#fff;
@@ -114,13 +156,18 @@ body {
 
 .FormGroup {
   margin: 0 15px 20px;
-  padding: 0;
+  padding: 0 1rem;
   border-style: none;
   background-color: #7795f8;
   will-change: opacity, transform;
   box-shadow: 0 6px 9px rgba(50, 50, 93, 0.06), 0 2px 5px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 #829fff;
   border-radius: 4px;
+ 
+}
+
+ .Form >.FormGroup:last-child{
+  padding:0;
 }
 
 .FormRow {
@@ -219,8 +266,21 @@ body {
   box-shadow: none;
 }
 
+.notfound{
+  background-image: url('../not-found.png');
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.imageDiv{
+  object-fit: contain;
+  width:80px;
+}
+
+
 .ErrorMessage {
-  color: #fff;
+  color:red;
   position: absolute;
   display: flex;
   justify-content: center;
@@ -235,6 +295,17 @@ body {
   animation-fill-mode: forwards;
   will-change: opacity, transform;
 }
+
+.linkstyle{
+  font-style: italic;
+  text-decoration: underline;
+
+ &:hover{
+   cursor: pointer;
+ }
+}
+
+
 
 .ErrorMessage svg {
   margin-right: 10px;
@@ -286,13 +357,13 @@ body {
     text-align: center!important;
 }
 
-body {
-    font-family: "Montserrat",Helvetica,Arial,serif;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.45;
-    color: #6e6b7b;
-}
+// body {
+//     font-family: "Montserrat",Helvetica,Arial,serif;
+//     font-size: 1rem;
+//     font-weight: 400;
+//     // line-height: 1.45;
+//     color: #6e6b7b;
+// }
 :root {
     --blue: #00cfe8;
     --indigo: #6610f2;
@@ -331,11 +402,31 @@ body {
 @media screen and (max-width: 990px) {
   .sidebar{
     display:none;
-  
+    
+  }
+
+  .mobilediv{
+    display:flex;
+    margin:1rem 2rem;
+    justify-content:space-between;
+   align-items: center;
+    
+    
+  }
+
+ .mobilediv > h5,p{
+    color:#6e6b7b;
   }
  
+  
+
   .container{
     display: block;
+  }
+
+  .card-element{
+    margin:auto 1rem;
+    padding:3rem 1rem;
   }
  
  }
