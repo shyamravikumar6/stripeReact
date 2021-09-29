@@ -23,7 +23,7 @@ background-color:$theme;
 
 .sidebar{
   @include card;
-  height:100vh;
+  height:100%;
   width:25%;
   position:relative;
  

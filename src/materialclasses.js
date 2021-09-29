@@ -33,6 +33,9 @@ import { makeStyles } from '@material-ui/core/styles';
         margin:'1rem 0',
         
     },
+    textStatus:{
+   margin:'auto'
+    },
     row:{
         display: "flex",
         justifyContent: "space-between",

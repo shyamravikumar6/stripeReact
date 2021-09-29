@@ -14,7 +14,8 @@ const RouterPage=()=>{
   return (
     <Router>
       <Switch>
-      <Route exact path='/' component={CheckoutForm}  />
+      <Route exact path='/checkout/:id' component={CheckoutForm}  />
+       
       <Route  component={NotFound} />
       </Switch>
     </Router>

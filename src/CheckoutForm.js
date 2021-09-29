@@ -17,16 +17,22 @@ import {
   Button,
   CircularProgress,
   Typography,
+  
   FormControlLabel,
   RadioGroup,
-  Radio
+  Radio,
+  InputAdornment
 } from "@material-ui/core";
+
+import {ErrorOutlineRounded, ErrorRounded, Home, PersonRounded} from '@material-ui/icons'
+
 
 // import './styles.css'
 
 import PaymentStatus from "./PaymentStatus";
 import defaultImage from './user_image.png';
 import StripeInput from "./StripeInput";
+import { createPaymentIntent } from "./constant/function";
 const stripePromise = loadStripe(
   "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
 );
@@ -52,45 +58,6 @@ const Svg = () => (
     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
 );
-// const CARD_OPTIONS = {
-//   iconStyle: "solid",
-//   style: {
-//     base: {
-//       iconColor: "#c4f0ff",
-//       color: "#fff",
-//       margin:0,
-//       fontWeight: 500,
-//       fontFamily: "Roboto, Open Sans, Segoe UI, sans-serif",
-//       fontSize: "16px",
-//       fontSmoothing: "antialiased",
-//       ":-webkit-autofill": {
-//         color: "#fce883"
-//       },
-//       "::placeholder": {
-//         color: "#87bbfd"
-//       }
-//     },
-//     invalid: {
-//       iconColor: "#ffc7ee",
-//       color: "#ffc7ee"
-//     }
-//   }
-// };
-// const CardField = ({ onChange }) => (
-//   <div className="FormRow">
-//     <CardElement options={CARD_OPTIONS} onChange={onChange} />
-//   </div>
-// );
-
-// const SubmitButton = ({ processing, error, children, disabled }) => (
-//   <button
-//     className={`SubmitButton ${error ? "SubmitButton--error" : ""}`}
-//     type="submit"
-//     disabled={processing || disabled}
-//   >
-//     {processing ? "Processing..." : children}
-//   </button>
-// );
 
 const ErrorMessage = ({ error }) => {
   console.log(error);
@@ -123,7 +90,7 @@ const ErrorMessage = ({ error }) => {
 //   </button>
 // );
 
-const CheckoutForm = ({ client }) => {
+const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
   const stripe = useStripe();
   
   const classes = style();
@@ -131,7 +98,7 @@ const CheckoutForm = ({ client }) => {
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState({});
+
   // const [frame,setIframe]=useState(false);
   // const [paymentMethod, setPaymentMethod] = useState(null);
 
@@ -144,8 +111,7 @@ const CheckoutForm = ({ client }) => {
     }, false);
   })
   const [billingDetails, setBillingDetails] = useState({
-    email: "",
-    phone: "",
+   cardtype:'debit',
     name: "",
   });
 
@@ -168,21 +134,31 @@ const CheckoutForm = ({ client }) => {
       setProcessing(true);
     }
   // console.log('343',billingDetails,elements.getElement(CardNumberElement));
+
+  
     try {
-      const {client_secret} = await stripe.paymentIntents.create({
+      const data = await createPaymentIntent({
         amount: 2000,
         currency: 'usd',
-        payment_method_types: ['card'],
+    
       });
+      const {client_secret} = data;
       
+      console.log(data);
+      delete billingDetails['cardtype'];
       const result = await stripe.confirmCardPayment(client_secret, {
+         payment_method_options:{
+           card:{cvc:elements.getElement(CardCvcElement)},
+          
+         },
         payment_method: {
-          card: elements.getElement(CardElement),
+          card: elements.getElement(CardNumberElement),
           billing_details: billingDetails,
         },
       });
       console.log(result);
       if (result.error) {
+        setProcessing(false);
         // Show error to your customer (e.g., insufficient funds)
         setError(result.error.message);
         setPaymentStatus({ fail: true, errormessage: result.error.message });
@@ -197,13 +173,12 @@ const CheckoutForm = ({ client }) => {
       }
       setProcessing(false);
     } catch (e) {
-      // console.log(e, "343");
+     
       setProcessing(false);
     }
   };
 
-  if (Object.keys(paymentStatus).length)
-    return <PaymentStatus status={paymentStatus} />;
+
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
      
@@ -211,22 +186,29 @@ const CheckoutForm = ({ client }) => {
       
    
 
-      <Grid item xs={12} sm={3}>
-                <Typography variant="h4" color="">Payment </Typography>
+      <Grid item xs={12} sm={12}>
+                <Typography variant="h4" color="primary">  Payment </Typography>
             </Grid>
 
-      
+            <Grid>
             <RadioGroup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ds
             row                                                                                             
           aria-label="quiz"
           name="cardtype"
+          color="primary"
+          variant='outlined'
           value={billingDetails.cardtype}
           onChange={e=>setBillingDetails({...billingDetails,cardtype:e.target.value})}
         >
-          <FormControlLabel  variant="outlined" value="credit" control={<Radio />} label="Credit" />
-          <FormControlLabel  variant="outlined" value="debit" control={<Radio />} label="Debit" />
+          
+          <Grid item variant="outlined" xs={6} sm={6} >          
+          <FormControlLabel color="primary"  labelPlacement="bottom"  value="credit" control={<Radio   />} label="Credit" />
+          </Grid>
+          <Grid  item variant="outlined" xs={6} sm={6}>
+          <FormControlLabel   value="debit" control={<Radio />} label="Debit"  labelPlacement="bottom" />
+          </Grid>
         </RadioGroup>
-         
+         </Grid>
  
      <TextField
      className={classes.textfield}
@@ -255,6 +237,13 @@ const CheckoutForm = ({ client }) => {
                 variant="outlined"
                 required
                 fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="end">
+                      <PersonRounded />
+                    </InputAdornment>
+                  ),
+                }}
                 value={billingDetails.name}
                 onChange={e =>  setBillingDetails({ ...billingDetails, name: e.target.value })
                 }
@@ -270,6 +259,7 @@ const CheckoutForm = ({ client }) => {
                 disabled={error}
                 required
                 fullWidth
+                onChange={e=>setError(e.error)}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                     inputComponent: StripeInput,
@@ -289,8 +279,14 @@ const CheckoutForm = ({ client }) => {
                 required
                 disabled={error}
                 fullWidth
+                onChange={e=>setError(e.error)}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="end">
+                      <ErrorRounded />
+                    </InputAdornment>
+                  ),
                     inputComponent: StripeInput,
                     inputProps: {
                         component: CardCvcElement
@@ -335,6 +331,7 @@ const ELEMENTS_OPTIONS = {
 const ElementStripe = () => {
   const queryString = window.location.search;
   console.log(queryString);
+  const [paymentStatus,setPaymentStatus]=useState({})
   // if (
   //   !queryString ||
   //   !queryString.includes("client_secret") ||
@@ -343,7 +340,9 @@ const ElementStripe = () => {
   //        return <InvalidLink />   ;
   //         // window.location.href  ='http://localhost:3000/failed';
   // }
-  
+  if (Object.keys(paymentStatus).length)
+  return <PaymentStatus status={paymentStatus} />;
+
   return (
     <div className="container">
       <div className="mobilediv">
@@ -390,7 +389,7 @@ const ElementStripe = () => {
     </div> */}
       <div className="card-element">
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-          <CheckoutForm  />
+          <CheckoutForm paymentStatus={paymentStatus} setPaymentStatus={setPaymentStatus} />
         </Elements>
       </div>
     </div>
