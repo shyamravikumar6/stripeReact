@@ -3,11 +3,11 @@ import {
   Card,
   Grid,
   CardHeader,
-  Typography,
+
   Button,
   CardContent
   } from "@material-ui/core";
-import { style } from './materialclasses';
+
 
 function PaymentStatus({status}) {
  

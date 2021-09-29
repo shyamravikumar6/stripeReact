@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {style} from './materialclasses';
 import {
-  CardElement,
+  
   Elements,
   useElements,
   useStripe,
@@ -18,24 +18,23 @@ import {
   CircularProgress,
   Typography,
   
-  FormControlLabel,
-  RadioGroup,
+  
   Radio,
   InputAdornment,
   InputLabel,
   Card
 } from "@material-ui/core";
 
-import {CropSquareRounded, DateRangeRounded, ErrorOutlineRounded, ErrorRounded, Home, PersonRounded} from '@material-ui/icons'
+import { DateRangeRounded, ErrorRounded, PersonRounded} from '@material-ui/icons'
 
 
 // import './styles.css'
 
-import PaymentStatus from "./PaymentStatus";
+
 import defaultImage from './user_image.png';
 import StripeInput from "./StripeInput";
 import { convertFormat, createPaymentIntent, getBase64FromUrl } from "./constant/function";
-import { deepPurple, purple, red } from "@material-ui/core/colors";
+import { deepPurple, purple } from "@material-ui/core/colors";
 import axios from "axios";
 import { SERVER_URL } from "./config";
 const stripePromise = loadStripe(
@@ -95,7 +94,7 @@ const ErrorMessage = ({ error }) => {
 //   </button>
 // );
 
-const CheckoutForm = ({setPaymentStatus,payload}) => {
+const CheckoutForm = ({payload}) => {
   const stripe = useStripe();
   
   const classes = style();
@@ -417,7 +416,7 @@ const {id} =  props.match.params;
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <Card style={{width:'360px'}} className='mobilehide'>
+      <Card style={{width:'360px',height:'100vh'}} className='mobilehide'>
         <div className="sidebardiv">
           <img  src={imageSrc}  alt='hello' className="imageDiv" />
           <p className='amount-text'>Payment Ref</p>
