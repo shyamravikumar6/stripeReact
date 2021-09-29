@@ -1,5 +1,6 @@
 
 import { responsiveFontSizes, createMuiTheme } from "@material-ui/core";
+import { deepPurple, purple } from "@material-ui/core/colors";
 
 let theme = {
     "typography": {
@@ -27,13 +28,13 @@ let theme = {
       },
       "primary": {
         "light": "#7dafc2",
-        "main": "#5d9cb3",
+        "main": deepPurple[500],
         "dark": "#416d7d",
         "contrastText": "#fff"
       },
       "secondary": {
         "light": "#ff4081",
-        "main": "#f50057",
+        "main": deepPurple[500],
         "dark": "#c51162",
         "contrastText": "#fff"
       },

@@ -21,10 +21,12 @@ import {
   FormControlLabel,
   RadioGroup,
   Radio,
-  InputAdornment
+  InputAdornment,
+  InputLabel,
+  Card
 } from "@material-ui/core";
 
-import {ErrorOutlineRounded, ErrorRounded, Home, PersonRounded} from '@material-ui/icons'
+import {CropSquareRounded, DateRangeRounded, ErrorOutlineRounded, ErrorRounded, Home, PersonRounded} from '@material-ui/icons'
 
 
 // import './styles.css'
@@ -32,7 +34,10 @@ import {ErrorOutlineRounded, ErrorRounded, Home, PersonRounded} from '@material-
 import PaymentStatus from "./PaymentStatus";
 import defaultImage from './user_image.png';
 import StripeInput from "./StripeInput";
-import { createPaymentIntent } from "./constant/function";
+import { convertFormat, createPaymentIntent, getBase64FromUrl } from "./constant/function";
+import { deepPurple, purple, red } from "@material-ui/core/colors";
+import axios from "axios";
+import { SERVER_URL } from "./config";
 const stripePromise = loadStripe(
   "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
 );
@@ -73,7 +78,7 @@ const ErrorMessage = ({ error }) => {
         d="M8.5,7.29791847 L6.12604076,4.92395924 C5.79409512,4.59201359 5.25590488,4.59201359 4.92395924,4.92395924 C4.59201359,5.25590488 4.59201359,5.79409512 4.92395924,6.12604076 L7.29791847,8.5 L4.92395924,10.8739592 C4.59201359,11.2059049 4.59201359,11.7440951 4.92395924,12.0760408 C5.25590488,12.4079864 5.79409512,12.4079864 6.12604076,12.0760408 L8.5,9.70208153 L10.8739592,12.0760408 C11.2059049,12.4079864 11.7440951,12.4079864 12.0760408,12.0760408 C12.4079864,11.7440951 12.4079864,11.2059049 12.0760408,10.8739592 L9.70208153,8.5 L12.0760408,6.12604076 C12.4079864,5.79409512 12.4079864,5.25590488 12.0760408,4.92395924 C11.7440951,4.59201359 11.2059049,4.59201359 10.8739592,4.92395924 L8.5,7.29791847 L8.5,7.29791847 Z"
       />
     </svg>
-    {error}
+    <Typography variant='p' color='error' >*{error}</Typography>
   </div>
 )  
 }
@@ -90,7 +95,7 @@ const ErrorMessage = ({ error }) => {
 //   </button>
 // );
 
-const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
+const CheckoutForm = ({setPaymentStatus,payload}) => {
   const stripe = useStripe();
   
   const classes = style();
@@ -103,7 +108,7 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
   // const [paymentMethod, setPaymentMethod] = useState(null);
 
   useEffect(()=>{
-    console.log(stripe);
+   
     window.addEventListener('message', function(ev) {
       if (ev.data === '3DS-authentication-complete') {
         // setIframe(false);
@@ -137,9 +142,11 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
 
   
     try {
+      let {amount,currency,unique_link_key}=payload;
+      amount=parseInt(amount);
       const data = await createPaymentIntent({
-        amount: 2000,
-        currency: 'usd',
+        amount,
+        currency,
     
       });
       const {client_secret} = data;
@@ -147,25 +154,24 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
       console.log(data);
       delete billingDetails['cardtype'];
       const result = await stripe.confirmCardPayment(client_secret, {
-         payment_method_options:{
-           card:{cvc:elements.getElement(CardCvcElement)},
-          
-         },
+        
         payment_method: {
           card: elements.getElement(CardNumberElement),
           billing_details: billingDetails,
         },
       });
-      console.log(result);
+       await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
+
       if (result.error) {
-        setProcessing(false);
+         window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
         // Show error to your customer (e.g., insufficient funds)
-        setError(result.error.message);
-        setPaymentStatus({ fail: true, errormessage: result.error.message });
+        // setError(result.error.message);
+        // setPaymentStatus({ fail: true, errormessage: result.error.message });
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-          setPaymentStatus({ success: true });
+          window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
+          // setPaymentStatus({ success: true });
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
 
@@ -173,6 +179,7 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
       }
       setProcessing(false);
     } catch (e) {
+      console.log(e);
      
       setProcessing(false);
     }
@@ -190,39 +197,52 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
                 <Typography variant="h4" color="primary">  Payment </Typography>
             </Grid>
 
-            <Grid>
-            <RadioGroup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ds
-            row                                                                                             
-          aria-label="quiz"
-          name="cardtype"
-          color="primary"
-          variant='outlined'
-          value={billingDetails.cardtype}
-          onChange={e=>setBillingDetails({...billingDetails,cardtype:e.target.value})}
-        >
+            <Grid  container row spacing={3} justify="space-between" style={{margin:'1rem 0'}} >
+            <Grid item xs={12} sm={12}>  
+           <InputLabel style={{marginTop:'2rem'}} color="primary"> Card Type</InputLabel>
+                </Grid>
+        <Grid item xs={4} sm={5} justify="center" className={classes.radioField}  style={{ display:'flex', flexDirection:'column', justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "credit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>   
+        <Radio
+          onChange={e=>setBillingDetails({...billingDetails,cardtype: 'credit'})}
+          checked={billingDetails.cardtype  === 'credit'}
+          value="credit"
+          name="radio-button-demo"
+          aria-label="A"
           
-          <Grid item variant="outlined" xs={6} sm={6} >          
-          <FormControlLabel color="primary"  labelPlacement="bottom"  value="credit" control={<Radio   />} label="Credit" />
-          </Grid>
-          <Grid  item variant="outlined" xs={6} sm={6}>
-          <FormControlLabel   value="debit" control={<Radio />} label="Debit"  labelPlacement="bottom" />
-          </Grid>
-        </RadioGroup>
+        />
+        <label style={{margin:'auto'}}>Credit</label>
+        </Grid>
+        <Grid  className={classes.radioField} item xs={5} sm={5 }  style={{ display:'flex', flexDirection:'column' , justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "debit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>  
+        <Radio
+          checked={billingDetails.cardtype  === 'debit'}
+          onChange={e=>setBillingDetails({...billingDetails,cardtype: 'debit'})}
+          value="debit"
+          name="radio-button-demo"
+          aria-label="B"
+        />
+                <label style={{margin:'auto'}}>Debit</label>
+         </Grid>
          </Grid>
  
      <TextField
      className={classes.textfield}
-     style={{margin:"1rem 0"}}
-                label="Credit Card Number"
+     style={{margin:"2rem 0" ,borderBlockColor:purple}}
+                label=" Card Number"
                 name="ccnumber"
                 variant="outlined"
                 required
+                
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                     inputComponent: StripeInput,
                     inputProps: {
-                        component: CardNumberElement
+                        component: CardNumberElement,
+                        options:{showIcon: true,
+                          placeholder:'',
+                        margin:0,
+                        padding:0
+                        }
                     },
 
                 }}
@@ -240,7 +260,7 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="end">
-                      <PersonRounded />
+                      <PersonRounded style={{marginRight:'1rem'}}/>
                     </InputAdornment>
                   ),
                 }}
@@ -249,11 +269,11 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
                 }
             />
              </Grid>
-            <Grid item container xs={12} justify="space-between" style={{margin:"1rem 0"}}>
+            <Grid item container xs={12} justify="space-between" style={{margin:"2rem 0"}}>
         <Grid item xs={4} sm={4}>
       <TextField
                className={classes.smalltextfield}
-                label="Expiration Date"
+                label="Expiry Date"
                 name="ccexp"
                 variant="outlined"
                 disabled={error}
@@ -262,9 +282,15 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
                 onChange={e=>setError(e.error)}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="end">
+                      <DateRangeRounded style={{marginRight:'1rem'}}  />
+                    </InputAdornment>
+                  ),
                     inputComponent: StripeInput,
                     inputProps: {
                         component: CardExpiryElement,
+                       
                        
                     },
                 }}
@@ -273,23 +299,25 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
           <Grid item xs={4} sm={4}>
             <TextField
                    className={classes.smalltextfield}
-                label="CVC"
+                
                 name="cvc"
                 variant="outlined"
                 required
+                label='CVV'
                 disabled={error}
                 fullWidth
                 onChange={e=>setError(e.error)}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="end">
-                      <ErrorRounded />
+                    <InputAdornment position='end'  >
+                      <ErrorRounded style={{marginRight:'1rem'}} />
                     </InputAdornment>
                   ),
                     inputComponent: StripeInput,
                     inputProps: {
-                        component: CardCvcElement
+                        component: CardCvcElement,
+           
                     },
                 }}
             />
@@ -302,19 +330,22 @@ const CheckoutForm = ({paymentStatus,setPaymentStatus}) => {
        {processing?'Processing....':'Pay'}
       </SubmitButton> */}
       {error&&<ErrorMessage  error={error.message} />}
+      <Grid xs={12} sm={12} justify="flex-end" >
       <Button variant="contained"
   color="primary"
-  className={classes.button}
+  style={{float:'right'}}
   type="submit"
   disabled={!stripe||processing}
 >
+ 
 {
   processing
   ?
-  <CircularProgress size={24} /> :'Pay'
+  <CircularProgress size={24} /> :`Purchase ${convertFormat(payload.currency,payload.amount)} `
   
 }
 </Button>
+</Grid>
 </Grid>
     </form>
   );
@@ -328,41 +359,71 @@ const ELEMENTS_OPTIONS = {
   ],
 };
 
-const ElementStripe = () => {
-  const queryString = window.location.search;
-  console.log(queryString);
+const ElementStripe = (props) => {
+
   const [paymentStatus,setPaymentStatus]=useState({})
-  // if (
-  //   !queryString ||
-  //   !queryString.includes("client_secret") ||
-  //   !String(queryString).split("=")[1]
-  // ) {
-  //        return <InvalidLink />   ;
-  //         // window.location.href  ='http://localhost:3000/failed';
-  // }
-  if (Object.keys(paymentStatus).length)
-  return <PaymentStatus status={paymentStatus} />;
+  const [loading,setLoading]=useState(true);
+  const [payload,setPayload]=useState({});
+  const[imageSrc,setImageSrc]=useState(defaultImage);
+useEffect(()=>{
+const {id} =  props.match.params;
+  axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
+          if(res.status==200){
+            const {transaction:{amount,merchant_id,unique_link_key,currency,id}} = res.data.data;
+            
+            setPayload({amount,merchant_id,unique_link_key,currency,id});
+           const data =  await getBase64FromUrl(`${SERVER_URL}/images/merchant/${merchant_id}`)
+           setImageSrc(data?data:defaultImage);
+
+          } 
+        setLoading(false);      
+  }).catch(err=> setLoading(false));
+  
+
+
+})
+
+
+
+  
+  if(loading) return  <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
+ 
+  </div>;
+  if (!Object.keys(payload).length)return( <div style={{display:'flex',flexDirection:'column', alignItems : 'center',justifyContent:'center',height:"100vh"}} > 
+      
+  <Typography style={{margin:'auto'}}variant='h2' color="error" > 
+  <svg width="50" height="50" style={{marginRight:'1rem'}} viewBox="0 0 17 17">
+      <path
+        fill="#FFF"
+        d="M8.5,17 C3.80557963,17 0,13.1944204 0,8.5 C0,3.80557963 3.80557963,0 8.5,0 C13.1944204,0 17,3.80557963 17,8.5 C17,13.1944204 13.1944204,17 8.5,17 Z"
+      />
+      <path
+        fill="#FF0000"
+        d="M8.5,7.29791847 L6.12604076,4.92395924 C5.79409512,4.59201359 5.25590488,4.59201359 4.92395924,4.92395924 C4.59201359,5.25590488 4.59201359,5.79409512 4.92395924,6.12604076 L7.29791847,8.5 L4.92395924,10.8739592 C4.59201359,11.2059049 4.59201359,11.7440951 4.92395924,12.0760408 C5.25590488,12.4079864 5.79409512,12.4079864 6.12604076,12.0760408 L8.5,9.70208153 L10.8739592,12.0760408 C11.2059049,12.4079864 11.7440951,12.4079864 12.0760408,12.0760408 C12.4079864,11.7440951 12.4079864,11.2059049 12.0760408,10.8739592 L9.70208153,8.5 L12.0760408,6.12604076 C12.4079864,5.79409512 12.4079864,5.25590488 12.0760408,4.92395924 C11.7440951,4.59201359 11.2059049,4.59201359 10.8739592,4.92395924 L8.5,7.29791847 L8.5,7.29791847 Z"
+      />
+    </svg>
+  Invalid Payment Link</Typography></div>);
 
   return (
     <div className="container">
       <div className="mobilediv">
         <div>
-        <img  src={defaultImage}  alt='hello' className="imageDiv" />
+        <img  src={imageSrc}  alt='hello' className="imageDiv" />
           </div>
           <div >
           <p className='amount-text'>Payment Ref</p>
-          <h4 className='amount'>2781</h4>
+          <h4 className='amount'>{payload.id}</h4>
           <p className='amount-text' style={{marginTop:'1rem'}}>Amount</p>
-          <h4 className='amount'>$ 7.00</h4>
+          <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <div className="sidebar">
+      <Card style={{width:'360px'}} className='mobilehide'>
         <div className="sidebardiv">
-          <img  src={defaultImage}  alt='hello' className="imageDiv" />
+          <img  src={imageSrc}  alt='hello' className="imageDiv" />
           <p className='amount-text'>Payment Ref</p>
-          <h4 className='amount'>2781</h4>
+          <h4 className='amount'>{payload.id}</h4>
           <p className='amount-text'>Amount</p>
-          <h4 className='amount'>$ 7.00</h4>
+          <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           <div className="svgDiv" />
           <div className="svgImg">
             <Svg />
@@ -378,7 +439,7 @@ const ElementStripe = () => {
             </p>
          <span className="linkstyle" >back to merchant</span>
         </div>
-      </div>
+      </Card>
 
       {/* <div >
     <img alt="" width="150"
@@ -389,7 +450,7 @@ const ElementStripe = () => {
     </div> */}
       <div className="card-element">
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-          <CheckoutForm paymentStatus={paymentStatus} setPaymentStatus={setPaymentStatus} />
+          <CheckoutForm  payload={payload} paymentStatus={paymentStatus} setPaymentStatus={setPaymentStatus} />
         </Elements>
       </div>
     </div>
