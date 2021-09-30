@@ -181,7 +181,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
      
-      <Grid container item xs={12} >
+      <Grid container item xs={12}  >
       
    
 
@@ -262,7 +262,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
             />
              </Grid>
             <Grid item container xs={12} justify="space-between" style={{margin:"2rem 0"}}>
-        <Grid item xs={4} sm={4}>
+        <Grid item xs={5} sm={4}>
       <TextField
                className={classes.smalltextfield}
                 label="Expiry Date"
@@ -288,7 +288,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 }}
             />
             </Grid>
-          <Grid item xs={4} sm={4}>
+          <Grid item xs={5} sm={4}>
             <TextField
                    className={classes.smalltextfield}
                 
@@ -440,11 +440,11 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <Card  className="card-element" >
+      <div className  className="card-element" >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
           <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>
-      </Card>
+      </div>
     </div>
   );
 };
