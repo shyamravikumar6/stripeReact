@@ -6,8 +6,7 @@
     word-wrap: break-word;
     background-color: #fff ;
     background-clip: border-box;
-    border: none;
-    
+    border: none;   
     border-radius: .428rem;
      padding:5rem;
         transition: all .3s ease-in-out,background 0s,color 0s,border-color 0s;
@@ -22,7 +21,7 @@
   @include card;
    
    padding:3em 2em;
-   margin:10rem 11em ;
+   margin:4rem 4em ;
    flex:1;
 
 

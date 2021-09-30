@@ -1,33 +1,20 @@
 import React from 'react'
-import {
-  Card,
-  Grid,
-  CardHeader,
 
-  Button,
-  CardContent
-  } from "@material-ui/core";
+import { green, red } from '@material-ui/core/colors';
 
 
 function PaymentStatus({status}) {
  
     return (
-        <Grid xs={6} sm={6} style={{margin:" 10rem auto "}} >
-        <Card  >
-         <CardHeader color='green' > {status.success? 'Payment Done successfully':'payemnt failed '}</CardHeader>
-          <CardContent>
-          <Grid item xs={12} sm={12} jusify='center'>
-          <h3 >Bank</h3>
-         </Grid>
-         {status.fail&&<p>{status.errormessage}</p>}
+      <div style={{ display: 'flex',justifyContent: 'center', alignItems: 'center',  minHeight:'100vh', position:'absolute', minWidth:'100vw'}}>
+      {status.success? <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={green[500]} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+         :<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={red[500]} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>}
+         <h1  style={{  color:`${status.success?green[500]:red[500]}`,marginLeft:'1rem'  }}>{status.success?'Payment done successfully':"Payment failed"} </h1>
+         {/* <h1  style={{ color:`${status.success?green[500]:red[500]}`}}>{status.success?'Payment done successfully':"Payment failed"} </h1> */}
+         {status.fail&&<p style={{color:'red'}} >{status.errormessage}</p>}
          
-         <Button variant="contained"
-         style={{marginLeft:"1rem",textColor:"white"}}
-         
-  color="primary" ><a className={{fontSyle:'italic'}} href="/checkout/232">Back to merchant</a></Button>
-        </CardContent>
-        </Card>
-        </Grid>
+ 
+        </div>
     )
 }
 

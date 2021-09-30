@@ -427,6 +427,10 @@ body {
 @media screen and (max-width: 990px) {
   .mobilehide{display:none}
 
+ .card-mobile{
+   margin:1rem 0;
+ }
+
   .imageDiv{
     margin:0;
   }
@@ -463,6 +467,8 @@ body {
   .container{
     display: block;
   }
+
+   
 
   .card-element{
     margin:auto 1rem;

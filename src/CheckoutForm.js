@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
+import PaymentDiv from './PaymentStatus';
 import {style} from './materialclasses';
 import {
   
@@ -67,16 +68,7 @@ const ErrorMessage = ({ error }) => {
   console.log(error);
   return (
   <div  role="alert">
-    <svg width="16" height="16" viewBox="0 0 17 17">
-      <path
-        fill="#FFF"
-        d="M8.5,17 C3.80557963,17 0,13.1944204 0,8.5 C0,3.80557963 3.80557963,0 8.5,0 C13.1944204,0 17,3.80557963 17,8.5 C17,13.1944204 13.1944204,17 8.5,17 Z"
-      />
-      <path
-        fill="#6772e5"
-        d="M8.5,7.29791847 L6.12604076,4.92395924 C5.79409512,4.59201359 5.25590488,4.59201359 4.92395924,4.92395924 C4.59201359,5.25590488 4.59201359,5.79409512 4.92395924,6.12604076 L7.29791847,8.5 L4.92395924,10.8739592 C4.59201359,11.2059049 4.59201359,11.7440951 4.92395924,12.0760408 C5.25590488,12.4079864 5.79409512,12.4079864 6.12604076,12.0760408 L8.5,9.70208153 L10.8739592,12.0760408 C11.2059049,12.4079864 11.7440951,12.4079864 12.0760408,12.0760408 C12.4079864,11.7440951 12.4079864,11.2059049 12.0760408,10.8739592 L9.70208153,8.5 L12.0760408,6.12604076 C12.4079864,5.79409512 12.4079864,5.25590488 12.0760408,4.92395924 C11.7440951,4.59201359 11.2059049,4.59201359 10.8739592,4.92395924 L8.5,7.29791847 L8.5,7.29791847 Z"
-      />
-    </svg>
+  
     <Typography variant='p' color='error' >*{error}</Typography>
   </div>
 )  
@@ -94,7 +86,7 @@ const ErrorMessage = ({ error }) => {
 //   </button>
 // );
 
-const CheckoutForm = ({payload}) => {
+const CheckoutForm = ({payload,setPaymentStatus}) => {
   const stripe = useStripe();
   
   const classes = style();
@@ -159,18 +151,18 @@ const CheckoutForm = ({payload}) => {
           billing_details: billingDetails,
         },
       });
-       await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
+      //  await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
 
       if (result.error) {
-         window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
+        //  window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
         // Show error to your customer (e.g., insufficient funds)
         // setError(result.error.message);
-        // setPaymentStatus({ fail: true, errormessage: result.error.message });
+         setPaymentStatus({ fail: true, errormessage: result.error.message });
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-          window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
-          // setPaymentStatus({ success: true });
+          // window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
+           setPaymentStatus({ success: true });
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
 
@@ -178,6 +170,7 @@ const CheckoutForm = ({payload}) => {
       }
       setProcessing(false);
     } catch (e) {
+      setError(e.error);
       console.log(e);
      
       setProcessing(false);
@@ -384,7 +377,7 @@ const {id} =  props.match.params;
 
 
 
-  
+  if(Object.keys(paymentStatus).length) return <PaymentDiv status={paymentStatus} />
   if(loading) return  <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
  
   </div>;
@@ -416,7 +409,7 @@ const {id} =  props.match.params;
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <Card style={{width:'360px',height:'100vh'}} className='mobilehide'>
+      <Card style={{width:'360px', overflow:"hidden",  minHeight:'100vh'}} className='mobilehide'>
         <div className="sidebardiv">
           <img  src={imageSrc}  alt='hello' className="imageDiv" />
           <p className='amount-text'>Payment Ref</p>
@@ -447,11 +440,11 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <div className="card-element">
+      <Card  className="card-element" >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-          <CheckoutForm  payload={payload} paymentStatus={paymentStatus} setPaymentStatus={setPaymentStatus} />
+          <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>
-      </div>
+      </Card>
     </div>
   );
 };
