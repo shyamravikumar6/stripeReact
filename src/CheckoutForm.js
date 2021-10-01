@@ -261,7 +261,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 }
             />
              </Grid>
-            <Grid item container xs={12} justify="space-between" style={{margin:"2rem 0"}}>
+            <Grid item container xs={12} justify="space-between" style={{margin:'2rem 0'}}>
         <Grid item xs={5} sm={4}>
       <TextField
                className={classes.smalltextfield}
@@ -322,7 +322,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
        {processing?'Processing....':'Pay'}
       </SubmitButton> */}
       {error&&<ErrorMessage  error={error.message} />}
-      <Grid xs={12} sm={12} justify="flex-end" >
+      <Grid item xs={12} row  sm={12} justify="flex-end" style={{marginTop:"4rem"}} >
       <Button variant="contained"
   color="primary"
   style={{float:'right'}}
