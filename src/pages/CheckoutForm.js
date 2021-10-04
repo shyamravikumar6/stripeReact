@@ -151,18 +151,18 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
           billing_details: billingDetails,
         },
       });
-        await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
+        await axios.post(`${SERVER_URL}/stripe/notification`,{...result.paymentIntent,unique_link_key});
 
       if (result.error) {
-          window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
+          window.location.href=`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
-         setPaymentStatus({ fail: true, errormessage: result.error.message });
+     
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-           window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
-           setPaymentStatus({ success: true });
+           window.location.href=`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`
+        
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
 
@@ -362,26 +362,27 @@ const ElementStripe = (props) => {
   const[imageSrc,setImageSrc]=useState(defaultImage);
 useEffect(()=>{ 
 const {id} =  props.match.params;
+
   axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
           if(res.status==200){
-            const {transaction:{amount,merchant_id,unique_link_key,currency,id}} = res.data.data;
-            console.log(res.data.data);
-            setPayload({amount,merchant_id,unique_link_key,currency,id});
+            const {transaction:{amount,merchant_id,unique_link_key,currency,order_id,payment_status}} = res.data.data;
+            if(payment_status!='COMPLETED'){
+            setPayload({amount,order_id,unique_link_key,currency});
            const data =  await getBase64FromUrl(`${SERVER_URL}/images/merchant/${merchant_id}`)
            setImageSrc(data?data:defaultImage);
-
+            }
           } 
-        setLoading(false);      
-  }).catch(err=>{ setLoading(false); setPayload({amount:200,merchant_id:3,id:34343,currency:'EUR'}) });
-  setLoading(false);
-  setPayload({amount:200,merchant_id:3,id:34343,currency:'EUR'})
+    setLoading(false);      
+  }).catch(err=>{  setLoading(false); });
+
+  
 
 },[])
 
 
 
   if(Object.keys(paymentStatus).length) return <PaymentDiv status={paymentStatus} />
-  if(loading) return  <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
+  if(loading) return <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
  
   </div>;
   if (!Object.keys(payload).length)return( <div style={{display:'flex',flexDirection:'column', alignItems : 'center',justifyContent:'center',height:"100vh"}} > 
@@ -423,9 +424,11 @@ const {id} =  props.match.params;
           <div className="svgImg  mx-auto">
             <Svg />
           </div>
-          <Grid container item xs={12} sm={9} justify="space-between" style={{marginTop:'2rem'}} >
+          <div className="flex justify-center mt-10"   >
                  <img key={'visa'} src="http://www.credit-card-logos.com/images/visa_credit-card-logos/new_visa_medium.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />
-            </Grid>
+                 <img key={'visa'} src="http://www.credit-card-logos.com/images/mastercard_credit-card-logos/mastercard_logo_4.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />
+                 {/* <img key={'visa'} src="http://www.credit-card-logos.com/images/mastercard_credit-card-logos/mastercard_logo_4.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} /> */}
+            </div>
           
             <p className='secure-text'>
               Pay the above amount using Open Banking, Safe and Secure. You will
