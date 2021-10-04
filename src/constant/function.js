@@ -19,6 +19,8 @@ export const createPaymentIntent=(value)=>{
     
 }
 
+export const emailValidate = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 
 export const convertFormat = (currency,someNumber) => {
   return new Intl.NumberFormat("en-US", {

@@ -11,7 +11,7 @@ const Error = () => {
   return (
     <div  >
    
-      <div className="flex " >
+      <div className="flex m-5 text-center" >
         <div className="mx-auto min-h-full   mt-20" >
           <h2 className='mb-1'>Page Not Found 🕵🏻‍♀️</h2>
           <p className='mb-2'>Oops! 😖 The requested URL was not found on this server.</p>
