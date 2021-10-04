@@ -32,19 +32,19 @@ import { DateRangeRounded, ErrorRounded, PersonRounded} from '@material-ui/icons
 // import './styles.css'
 
 
-import defaultImage from './user_image.png';
+import defaultImage from '../user_image.png';
 import StripeInput from "./StripeInput";
-import { convertFormat, createPaymentIntent, getBase64FromUrl } from "./constant/function";
+import { convertFormat, createPaymentIntent, getBase64FromUrl } from "../constant/function";
 import { deepPurple, purple } from "@material-ui/core/colors";
 import axios from "axios";
-import { SERVER_URL } from "./config";
+import { SERVER_URL } from "../config";
 const stripePromise = loadStripe(
   "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
 );
 
-// const cardLogo=[
-//   'Maestro','Visa'
-// ];
+const cardLogo=[
+  'Maestro','Visa'
+];
 
 // const InvalidLink=()=>(<div className="invalid_link"><div className="card-element"><p>Invalid data</p></div> </div>)
 const Svg = () => (
@@ -151,17 +151,17 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
           billing_details: billingDetails,
         },
       });
-      //  await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
+        await axios.post(`${SERVER_URL}/stripe/notification`,{...result,unique_link_key});
 
       if (result.error) {
-        //  window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
-        // Show error to your customer (e.g., insufficient funds)
-        // setError(result.error.message);
+          window.location.href=`admin.zotto.io/stripe/success?unique_link_key=${unique_link_key}`
+        //  Show error to your customer (e.g., insufficient funds)
+        //  setError(result.error.message);
          setPaymentStatus({ fail: true, errormessage: result.error.message });
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-          // window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
+           window.location.href=`admin.zotto.io/stripe/failed?unique_link_key=${unique_link_key}`
            setPaymentStatus({ success: true });
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
@@ -181,7 +181,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
      
-      <Grid container item xs={12}  >
+      <Grid container item xs={12} className="ml-2"  >
       
    
 
@@ -202,7 +202,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
           aria-label="A"
           
         />
-        <label style={{margin:'auto'}}>Credit</label>
+        <label   className='text-black-500' style={{margin:'auto'}}>Credit</label>
         </Grid>
         <Grid  className={classes.radioField} item xs={5} sm={5 }  style={{ display:'flex', flexDirection:'column' , justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "debit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>  
         <Radio
@@ -218,7 +218,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
  
      <TextField
      className={classes.textfield}
-     style={{margin:"2rem 0" ,borderBlockColor:purple}}
+     style={{margin:"2rem 0 "   ,borderBlockColor:purple}}
                 label=" Card Number"
                 name="ccnumber"
                 variant="outlined"
@@ -230,10 +230,12 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                     inputComponent: StripeInput,
                     inputProps: {
                         component: CardNumberElement,
+                        className:"pl-2",
                         options:{showIcon: true,
                           placeholder:'',
-                        margin:0,
-                        padding:0
+                          
+                        margin:"1rem",
+                        
                         }
                     },
 
@@ -322,10 +324,11 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
        {processing?'Processing....':'Pay'}
       </SubmitButton> */}
       {error&&<ErrorMessage  error={error.message} />}
-      <Grid item xs={12} row  sm={12} justify="flex-end" style={{marginTop:"4rem"}} >
+      <div   className='flex flex-1 justify-end mb-2'>
       <Button variant="contained"
+      className='h-14'
   color="primary"
-  style={{float:'right'}}
+
   type="submit"
   disabled={!stripe||processing}
 >
@@ -337,7 +340,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
   
 }
 </Button>
-</Grid>
+</div>
 </Grid>
     </form>
   );
@@ -357,23 +360,23 @@ const ElementStripe = (props) => {
   const [loading,setLoading]=useState(true);
   const [payload,setPayload]=useState({});
   const[imageSrc,setImageSrc]=useState(defaultImage);
-useEffect(()=>{
+useEffect(()=>{ 
 const {id} =  props.match.params;
   axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
           if(res.status==200){
             const {transaction:{amount,merchant_id,unique_link_key,currency,id}} = res.data.data;
-            
+            console.log(res.data.data);
             setPayload({amount,merchant_id,unique_link_key,currency,id});
            const data =  await getBase64FromUrl(`${SERVER_URL}/images/merchant/${merchant_id}`)
            setImageSrc(data?data:defaultImage);
 
           } 
         setLoading(false);      
-  }).catch(err=> setLoading(false));
-  
+  }).catch(err=>{ setLoading(false); setPayload({amount:200,merchant_id:3,id:34343,currency:'EUR'}) });
+  setLoading(false);
+  setPayload({amount:200,merchant_id:3,id:34343,currency:'EUR'})
 
-
-})
+},[])
 
 
 
@@ -383,7 +386,7 @@ const {id} =  props.match.params;
   </div>;
   if (!Object.keys(payload).length)return( <div style={{display:'flex',flexDirection:'column', alignItems : 'center',justifyContent:'center',height:"100vh"}} > 
       
-  <Typography style={{margin:'auto'}}variant='h2' color="error" > 
+  <p className="text-7xl mb-3 text-red-500">Invalid payment link</p>
   <svg width="50" height="50" style={{marginRight:'1rem'}} viewBox="0 0 17 17">
       <path
         fill="#FFF"
@@ -394,13 +397,13 @@ const {id} =  props.match.params;
         d="M8.5,7.29791847 L6.12604076,4.92395924 C5.79409512,4.59201359 5.25590488,4.59201359 4.92395924,4.92395924 C4.59201359,5.25590488 4.59201359,5.79409512 4.92395924,6.12604076 L7.29791847,8.5 L4.92395924,10.8739592 C4.59201359,11.2059049 4.59201359,11.7440951 4.92395924,12.0760408 C5.25590488,12.4079864 5.79409512,12.4079864 6.12604076,12.0760408 L8.5,9.70208153 L10.8739592,12.0760408 C11.2059049,12.4079864 11.7440951,12.4079864 12.0760408,12.0760408 C12.4079864,11.7440951 12.4079864,11.2059049 12.0760408,10.8739592 L9.70208153,8.5 L12.0760408,6.12604076 C12.4079864,5.79409512 12.4079864,5.25590488 12.0760408,4.92395924 C11.7440951,4.59201359 11.2059049,4.59201359 10.8739592,4.92395924 L8.5,7.29791847 L8.5,7.29791847 Z"
       />
     </svg>
-  Invalid Payment Link</Typography></div>);
+ </div>);
 
   return (
-    <div className="container">
+    <div className='  md:inline-flex  min-h-screen' >
       <div className="mobilediv">
         <div>
-        <img  src={imageSrc}  alt='hello' className="imageDiv" />
+        <img  src={imageSrc}  alt='hello' className=" mx-auto h-40" />
           </div>
           <div >
           <p className='amount-text'>Payment Ref</p>
@@ -409,19 +412,19 @@ const {id} =  props.match.params;
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <Card style={{width:'360px', overflow:"hidden",  minHeight:'100vh'}} className='mobilehide'>
-        <div className="sidebardiv">
-          <img  src={imageSrc}  alt='hello' className="imageDiv" />
+      <div className='mobilehide  w-1/4 '>
+        <div className="card    text-center min-h-full justify-items-center     ">
+          <img  src={imageSrc}  alt='hello' className="mx-auto h-40" />
           <p className='amount-text'>Payment Ref</p>
           <h4 className='amount'>{payload.id}</h4>
           <p className='amount-text'>Amount</p>
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           <div className="svgDiv" />
-          <div className="svgImg">
+          <div className="svgImg  mx-auto">
             <Svg />
           </div>
           <Grid container item xs={12} sm={9} justify="space-between" style={{marginTop:'2rem'}} >
-                {/* {cardLogo.map(e => <img key={e} src={import(`./${e}.png`)} alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />)} */}
+                 <img key={'visa'} src="http://www.credit-card-logos.com/images/visa_credit-card-logos/new_visa_medium.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />
             </Grid>
           
             <p className='secure-text'>
@@ -431,7 +434,7 @@ const {id} =  props.match.params;
             </p>
          <span className="linkstyle" >back to merchant</span>
         </div>
-      </Card>
+      </div>
 
       {/* <div >
     <img alt="" width="150"
@@ -440,7 +443,7 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <div className  className="card-element" >
+      <div className  className="card flex-initial md:mx-auto   md:my-20      px-4 mb-20 pb-3  mx-2 " >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
           <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>

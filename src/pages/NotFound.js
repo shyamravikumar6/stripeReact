@@ -3,8 +3,8 @@
 import React from 'react'
 
 
-import errorImg from './error.svg';
-import './styles/page-misc.scss';
+import errorImg from '../error.svg';
+import '../styles/page-misc.scss';
 
 
 const Error = () => {
