@@ -202,9 +202,9 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
           aria-label="A"
           
         />
-        <p   className=' font-thin text-black-500' style={{margin:'auto'}}>Credit</p>
+        <p   className=' font-thin text-black-500 text-xs' style={{margin:'auto'}}>Credit</p>
         </Grid>
-        <Grid  className={classes.radioField} item xs={5} sm={5 }  style={{ display:'flex', flexDirection:'column' , justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "debit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>  
+        <Grid  className={classes.radioField} item xs={4} sm={5 }  style={{ display:'flex', flexDirection:'column' , justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "debit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>  
         <Radio
           checked={billingDetails.cardtype  === 'debit'}
           onChange={e=>setBillingDetails({...billingDetails,cardtype: 'debit'})}
@@ -212,7 +212,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
           name="radio-button-demo"
           aria-label="B"
         />
-              <p   className=' font-thin text-black-500' style={{margin:'auto'}}>Debit</p>
+              <p   className=' font-thin text-black-500  text-xs' style={{margin:'auto'}}>Debit</p>
          </Grid>
          </Grid>
  
@@ -411,14 +411,14 @@ const {id} =  props.match.params;
 
 
 
-  if(Object.keys(paymentStatus).length) return <PaymentDiv status={paymentStatus} />
+  if(!loading&&!Object.keys(payload).length) return window.location.href='/';
   if(loading) return <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
  
   </div>;
 
-
+  
   return (
-    <div className='  md:inline-flex  min-h-screen' >
+    <div className='  md:inline-flex  min-h-screen overflow-y-scroll' >
       <div className="mobilediv">
         <div>
         <img  src={imageSrc}  alt='hello' className=" mx-auto h-40" />
@@ -430,8 +430,8 @@ const {id} =  props.match.params;
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <div className='mobilehide  w-1/4 '>
-        <div className="card    text-center min-h-full justify-items-center     ">
+      <div className='mobilehide ' style={{width:'560px'}} >
+        <div className="card  m-md-0 p-md-0   text-center min-h-full justify-items-center     ">
           <img  src={imageSrc}  alt='hello' className="mx-auto h-40" />
           <p className='amount-text'>Payment Ref</p>
           <h4 className='amount'>{payload.order_id}</h4>
@@ -447,7 +447,7 @@ const {id} =  props.match.params;
                  {/* <img key={'visa'} src="http://www.credit-card-logos.com/images/mastercard_credit-card-logos/mastercard_logo_4.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} /> */}
             </div>
           
-            <p className='secure-text'>
+            <p className='font-thin text-xs my-5 '>
               Pay the above amount using Open Banking, Safe and Secure. You will
               be navigated to your Selected Banking app to securely authenticate
               and make the payment.
@@ -463,7 +463,7 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <div className  className="card flex-initial md:mx-20   md:my-20  scroll-y-none   px-8 mb-20 pb-3  mx-2 " >
+      <div className  className="card flex-initial md:mx-20   md:my-20      px-8 mb-20 pb-3  mx-4 " >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
           <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>
