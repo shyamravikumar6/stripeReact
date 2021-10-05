@@ -20,10 +20,10 @@ import { dark } from '@material-ui/core/styles/createPalette';
         minHeight: "55px"
     },
     form: {
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-around",
-        width: "100%"
+        // display: "flex",
+        // flexDirection: "column",
+        // justifyContent: "space-around",
+        
     },
     textfield: {
         marginTop: "1rem",

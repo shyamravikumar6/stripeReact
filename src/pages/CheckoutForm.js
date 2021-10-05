@@ -26,7 +26,7 @@ import {
   Card
 } from "@material-ui/core";
 
-import { DateRangeRounded, ErrorRounded, MailRounded, PersonRounded} from '@material-ui/icons'
+import { CardTravelRounded, CreditCard, DateRangeRounded, ErrorRounded, MailRounded, PersonRounded} from '@material-ui/icons'
 
 
 // import './styles.css'
@@ -44,6 +44,8 @@ const stripePromise = loadStripe(
 
 
 
+const DefaultCardLogo= () =><svg focusable="false" viewBox="0 0 32 21"><g fill="#b8c2cc" fill-rule="evenodd"><g ><path d="M26.58 21H2.42A2.4 2.4 0 0 1 0 18.62V4.38A2.4 2.4 0 0 1 2.42 2h24.16A2.4 2.4 0 0 1 29 4.38v14.25A2.4 2.4 0 0 1 26.58 21zM10 7.83c0-.46-.35-.83-.78-.83H3.78c-.43 0-.78.37-.78.83v3.34c0 .46.35.83.78.83h5.44c.43 0 .78-.37.78-.83V7.83zM25 17c.65 0 1-.3 1-1s-.35-1-1-1h-3c-.65 0-1 .3-1 1s.35 1 1 1h3zm-6 0c.65 0 1-.3 1-1s-.35-1-1-1h-3c-.65 0-1 .3-1 1s.35 1 1 1h3zm-6 0c.65 0 1-.3 1-1s-.35-1-1-1h-3c-.65 0-1 .3-1 1s.35 1 1 1h3zm-6 0c.65 0 1-.3 1-1s-.35-1-1-1H4c-.65 0-1 .3-1 1s.35 1 1 1h3z"></path></g></g></svg>
+const ErrorCardLogo=()=><svg focusable="false" viewBox="0 0 32 21"><g fill="none" fill-rule="evenodd"><g id="error" class="Icon-fill"><path id="shape" d="M18.13 2a8.5 8.5 0 0 0 4 13H22c-.65 0-1 .3-1 1s.35 1 1 1h3c.65 0 1-.3 1-1 0-.22-.03-.4-.1-.55a8.44 8.44 0 0 0 3.1-.95v4.13A2.4 2.4 0 0 1 26.58 21H2.42A2.4 2.4 0 0 1 0 18.62V4.38A2.4 2.4 0 0 1 2.42 2h15.7zM10 7.83c0-.46-.35-.83-.78-.83H3.78c-.43 0-.78.37-.78.83v3.34c0 .46.35.83.78.83h5.44c.43 0 .78-.37.78-.83V7.83zM19 17c.65 0 1-.3 1-1s-.35-1-1-1h-3c-.65 0-1 .3-1 1s.35 1 1 1h3zm-6 0c.65 0 1-.3 1-1s-.35-1-1-1h-3c-.65 0-1 .3-1 1s.35 1 1 1h3zm-6 0c.65 0 1-.3 1-1s-.35-1-1-1H4c-.65 0-1 .3-1 1s.35 1 1 1h3zm18-3a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM24 3v4a1 1 0 0 0 2 0V3a1 1 0 0 0-2 0zm1 8.75a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5z"></path></g></g></svg>
 // const InvalidLink=()=>(<div className="invalid_link"><div className="card-element"><p>Invalid data</p></div> </div>)
 const Svg = () => (
   <svg
@@ -62,14 +64,25 @@ const Svg = () => (
   </svg>
 );
 
-const ErrorMessage = ({ error }) => {
- 
+const ErrorMessage = ({ error,setBrandLogo }) => {
+  if(error=="Your card number is incomplete.")setBrandLogo(null);
   return (
   <div  role="alert">
   
     <p className='text-red-500 mb-2'>  *{error}</p>
   </div>
 )  
+}
+
+
+var cardBrand = {
+  'visa': 'visa-365725566f9578a9589553aa9296d178',
+'mastercard': 'mastercard-4d8844094130711885b5e41b28c9848f',
+'amex': 'amex-a49b82f46c5cd6a96a6e418a6ca1717c',
+'discover': 'pf-discover',
+'diners': 'pf-diners',
+'jcb': 'pf-jcb',
+'unknown': 'pf-credit-card',
 }
 
 
@@ -92,7 +105,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
   const [processing, setProcessing] = useState(false);
-
+ const[brandLogo,setBrandLogo]=useState('');
   // const [frame,setIframe]=useState(false);
   // const [paymentMethod, setPaymentMethod] = useState(null);
 
@@ -104,6 +117,18 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
       }
     }, false);
   })
+
+
+ useEffect(()=>{
+
+
+
+
+
+ },[brandLogo])
+
+
+
   const [billingDetails, setBillingDetails] = useState({
    cardtype:'debit',
     name: "",
@@ -179,9 +204,9 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
 
 
   return (
-    <form className={classes.form} onSubmit={handleSubmit}>
+    <form className='mr-0'   onSubmit={handleSubmit}>
      
-      <Grid container item xs={12} className="ml-1"  >
+      <Grid container item xs={12} sm={12} md={12} className='mx-auto' >
       
    
 
@@ -189,9 +214,9 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 <Typography variant="h4" color="primary">  Payment </Typography>
             </Grid>
 
-            <Grid  container row spacing={3} justify="space-between" style={{margin:'1rem 0'}} >
+            <Grid  container row spacing={1} justify="space-between" style={{margin:'2rem 0'}} >
             <Grid item xs={12} sm={12}>  
-           <InputLabel style={{marginTop:'1rem'}} color="primary"> Card Type</InputLabel>
+           <InputLabel style={{marginTop:'0'}} color="primary"> Card Type</InputLabel>
                 </Grid>
         <Grid item xs={4} sm={5} justify="center" className={classes.radioField}  style={{ display:'flex', flexDirection:'column', justifyContent: 'center',border: `1px solid ${billingDetails.cardtype== "credit"? ` ${deepPurple[500]}`:'#b8c2cc'}`}}>   
         <Radio
@@ -218,7 +243,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
  
      <TextField
      className={classes.textfield}
-     style={{margin:"2rem 0 "   ,borderBlockColor:purple}}
+     style={{marginBottom:"2rem "   ,borderBlockColor:purple}}
                 label=" Card Number"
                 name="ccnumber"
                 variant="outlined"
@@ -227,32 +252,56 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
+                 
+                  endAdornment: (
+                    <InputAdornment position="end">
+                   {  brandLogo&&brandLogo!='unknown'? <img src={`https://js.stripe.com/v3/fingerprinted/img/${cardBrand[brandLogo]}.svg`}  style={{marginRight:'1rem' ,marginLeft:'0'}}   className="text-gray-200"/>:<CreditCard className={`mr-3  ${error? 'text-red-500':'text-gray-200'} `}    />}
+                    </InputAdornment>
+                  ),
+
                     inputComponent: StripeInput,
+                    
                     inputProps: {
                         component: CardNumberElement,
-                       
-                        options:{showIcon: true,
-                          placeholder:'',
-                          
-                        margin:"1rem",
+                       options:{
                         
+                        
+                        placeholder:'',
+                        iconStyle:'solid',
+                        style:{
+
+                          base: { 
+                            iconColor:"#b8c2cc",
+                          
+                            left:'20px',
+                          
+                            fontWeight: 300,
+                            fontFamily: 'Helvetica Neue',
+                            fontSize: '15px',
+                        
+                            '::placeholder': {
+                              color: '#CFD7E0',
+                            },
+                          },
                         }
+                       }
+                        
                     },
 
                 }}
 
-                onChange={(e)=>{setError(e.error);  setCardComplete(e.complete); }}
+                onChange={(e)=>{setError(e.error); setBrandLogo(e.brand);console.log(e);  setCardComplete(e.complete); }}
             />
                <Grid  item xs={12} sm={12}  >
        <TextField
-       className={classes.textfield}
+      
                 label="Card Holder Name"
                 name="name"
                 variant="outlined"
                 style={{paddingLeft:'0'}}
                 fullWidth
                 InputProps={{
-                  startAdornment: (
+                  endAdornment: (
                     <InputAdornment position="end">
                       <PersonRounded style={{marginRight:'1rem' ,marginLeft:'0'}}   className="text-gray-200"/>
                     </InputAdornment>
@@ -263,7 +312,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 }
             />
              </Grid>
-             <div  className="my-10  flex flex-1" >
+             <div  className="my-8  flex flex-1" >
        <TextField
        
                 label="Email"
@@ -272,7 +321,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 style={{paddingLeft:'0'}}
                 fullWidth
                 InputProps={{
-                  startAdornment: (
+                  endAdornment: (
                     <InputAdornment position="end">
                       <MailRounded  style={{marginRight:'1rem' ,marginLeft:'0'}}  className="text-gray-200" />
                     </InputAdornment>
@@ -290,7 +339,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
             />
              </div>
             <Grid item container xs={12} justify="space-between" style={{marginBottom :' 2rem'}}  >
-        <Grid item xs={5} sm={4}>
+        <Grid item xs={5} sm={5}>
       <TextField
                className={classes.smalltextfield}
                 label="Expiry Date"
@@ -302,7 +351,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
               
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
-                  startAdornment: (
+                  endAdornment: (
                     <InputAdornment position="end">
                       <DateRangeRounded style={{marginRight:'1rem'}}  className="text-gray-200"  />
                     </InputAdornment>
@@ -314,10 +363,10 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                        
                     },
                 }}
-                onChange={(e)=>{setError(e.error);  setCardComplete(e.complete); }}
+                onChange={(e)=>{setError(e.error); setBrandLogo(e.brand); setCardComplete(e.complete); }}
             />
             </Grid>
-          <Grid item xs={5} sm={4}>
+          <Grid item xs={5} sm={5}>
             <TextField
                    className={classes.smalltextfield}
                 
@@ -330,7 +379,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 onChange={e=>setError(e.error)}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
-                  startAdornment: (
+                  endAdornment: (
                     <InputAdornment position='end'  >
                       <ErrorRounded style={{marginRight:'1rem'}}   className="text-gray-200" />
                     </InputAdornment>
@@ -351,7 +400,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
       {/* <SubmitButton error={error} disabled={!stripe || processing}>
        {processing?'Processing....':'Pay'}
       </SubmitButton> */}
-      {error&&<ErrorMessage  error={error.message} />}
+      {error&&<ErrorMessage setBrandLogo={setBrandLogo}  error={error.message} />}
       <div   className='flex flex-1 justify-end mb-8'>
       <Button variant="contained"
       className='h-14'
@@ -418,7 +467,7 @@ const {id} =  props.match.params;
 
   
   return (
-    <div className='  md:inline-flex  min-h-screen overflow-y-scroll' >
+    <div className='  md:inline-flex  min-h-screen overflow-y-scroll  md:overflow-hidden' >
       <div className="mobilediv">
         <div>
         <img  src={imageSrc}  alt='hello' className=" mx-auto h-40" />
@@ -430,13 +479,13 @@ const {id} =  props.match.params;
           <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <div className='mobilehide ' style={{width:'560px'}} >
-        <div className="card  m-md-0 p-md-0   text-center min-h-full justify-items-center     ">
-          <img  src={imageSrc}  alt='hello' className="mx-auto h-40" />
-          <p className='amount-text'>Payment Ref</p>
-          <h4 className='amount'>{payload.order_id}</h4>
-          <p className='amount-text'>Amount</p>
-          <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
+      <div className='mobilehide' style={{width:'560px'}} >
+        <div className="card   pt-1 min-h-full   text-center  justify-items-center ">
+          <img  src={imageSrc}  alt='hello' className="mx-auto h-30  my-0" />
+          <p className='font-thin'>Payment Ref</p>
+          <h4 className='mb-5'>{payload.order_id}</h4>
+          <p className='font-thin mt-0'>Amount</p>
+          <h4 className='mb-20'>{convertFormat(payload.currency,payload.amount)}</h4>
           <div className="svgDiv" />
           <div className="svgImg  mx-auto">
             <Svg />
@@ -447,12 +496,12 @@ const {id} =  props.match.params;
                  {/* <img key={'visa'} src="http://www.credit-card-logos.com/images/mastercard_credit-card-logos/mastercard_logo_4.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} /> */}
             </div>
           
-            <p className='font-thin text-xs my-5 '>
+            <p className='font-medium text-xs  my-5 '>
               Pay the above amount using Open Banking, Safe and Secure. You will
               be navigated to your Selected Banking app to securely authenticate
               and make the payment.
             </p>
-         <span className="linkstyle" >back to merchant</span>
+         <span className="linkstyle" onClick={e=>window.location.href='https://admin.zotto.io'} >back to merchant</span>
         </div>
       </div>
 
@@ -463,7 +512,7 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <div className  className="card flex-initial md:mx-20   md:my-20      px-8 mb-20 pb-3  mx-4 " >
+      <div className  className="card flex-shrink-1   md:mx-60    md:my-auto       mb-20 pb-3  mx-4 " >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
           <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>
