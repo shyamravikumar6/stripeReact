@@ -79,9 +79,10 @@ var cardBrand = {
   'visa': 'visa-365725566f9578a9589553aa9296d178',
 'mastercard': 'mastercard-4d8844094130711885b5e41b28c9848f',
 'amex': 'amex-a49b82f46c5cd6a96a6e418a6ca1717c',
-'discover': 'pf-discover',
-'diners': 'pf-diners',
-'jcb': 'pf-jcb',
+'discover': 'discover-ac52cd46f89fa40a29a0bfb954e33173',
+'diners': 'diners-fbcbd3360f8e3f629cdaa80e93abdb8b',
+'jcb': 'jcb-271fd06e6e7a2c52692ffa91a95fb64f',
+'unionpay':'unionpay-8a10aefc7295216c338ba4e1224627a1',
 'unknown': 'pf-credit-card',
 }
 
@@ -179,6 +180,8 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
         await axios.post(`${SERVER_URL}/stripe/notification`,{...result.paymentIntent,unique_link_key});
 
       if (result.error) {
+            setError(result.error);
+
           window.location.href=`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
@@ -195,7 +198,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
       }
       
     } catch (e) {
-      setError(e.error);
+      setError({ message:"Opps! something went wrong"});
       console.log(e);
      
       setProcessing(false);
@@ -204,7 +207,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
 
 
   return (
-    <form className='mr-0'   onSubmit={handleSubmit}>
+    <form className='mr-0 my-10'   onSubmit={handleSubmit}>
      
       <Grid container item xs={12} sm={12} md={12} className='mx-auto' >
       
@@ -214,7 +217,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 <Typography variant="h4" color="primary">  Payment </Typography>
             </Grid>
 
-            <Grid  container row spacing={1} justify="space-between" style={{margin:'2rem 0'}} >
+            <Grid  container row spacing={1} justify="space-between" style={{margin:'1rem 0'}} >
             <Grid item xs={12} sm={12}>  
            <InputLabel style={{marginTop:'0'}} color="primary"> Card Type</InputLabel>
                 </Grid>
@@ -243,7 +246,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
  
      <TextField
      className={classes.textfield}
-     style={{marginBottom:"2rem "   ,borderBlockColor:purple}}
+     style={{marginBottom:"1rem "   ,borderBlockColor:purple}}
                 label=" Card Number"
                 name="ccnumber"
                 variant="outlined"
@@ -265,7 +268,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                         component: CardNumberElement,
                        options:{
                         
-                        
+                        showIcon: true,
                         placeholder:'',
                         iconStyle:'solid',
                         style:{
@@ -312,7 +315,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 }
             />
              </Grid>
-             <div  className="my-8  flex flex-1" >
+             <div  className="my-4  flex flex-1" >
        <TextField
        
                 label="Email"
@@ -338,10 +341,10 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                  onError={e=> {console.log(e); setError(e.error)}}
             />
              </div>
-            <Grid item container xs={12} justify="space-between" style={{marginBottom :' 2rem'}}  >
-        <Grid item xs={5} sm={5}>
+            <Grid item container xs={12}  justify="space-between"  className='space-y-5 md:space-y-0'  style={{marginBottom :' 1rem'}}  >
+        <Grid item xs={12} sm={5} className=' md:mb-0'>
       <TextField
-               className={classes.smalltextfield}
+               className={`${classes.smalltextfield} mt-10`}
                 label="Expiry Date"
                 name="ccexp"
                 variant="outlined"
@@ -366,8 +369,9 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
                 onChange={(e)=>{setError(e.error); setBrandLogo(e.brand); setCardComplete(e.complete); }}
             />
             </Grid>
-          <Grid item xs={5} sm={5}>
+          <Grid item xs={12} sm={5} className='sm:mt-10'>
             <TextField
+                           
                    className={classes.smalltextfield}
                 
                 name="cvc"
@@ -403,7 +407,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
       {error&&<ErrorMessage setBrandLogo={setBrandLogo}  error={error.message} />}
       <div   className='flex flex-1 justify-end mb-8'>
       <Button variant="contained"
-      className='h-14'
+      className='h-14 w-full md:w-1/3 2xl:w-1/4 text-nowrap '
   color="primary"
 
   type="submit"
@@ -442,17 +446,22 @@ const {id} =  props.match.params;
 
   axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
           if(res.status==200){
-            const {transaction:{amount,merchant_id,unique_link_key,currency,order_id,payment_status}} = res.data.data;
+            console.log(res.data.data.transaction,'343')
+            const {transaction:{amount,merchant_id,unique_link_key,currency,order_id,logo,payment_status}} = res.data.data;
             if(payment_status!='COMPLETED'){
-            setPayload({amount,order_id,unique_link_key,currency});
+             setPayload({...payload,amount,currency,order_id,logo,unique_link_key,merchant_id});
+          
            const data =  await getBase64FromUrl(`${SERVER_URL}/images/merchant/${merchant_id}`)
            setImageSrc(data?data:defaultImage);
             }else{
-              window.location.href='/'
+              // window.location.href='/'
             }
           } 
     setLoading(false);      
-  }).catch(err=>{  setLoading(false); window.location.href='/'});
+  }).catch(err=>{  setLoading(false);
+    
+    // window.location.href='/'
+  });
 
   
 
@@ -467,28 +476,28 @@ const {id} =  props.match.params;
 
   
   return (
-    <div className='  md:inline-flex  min-h-screen overflow-y-scroll  md:overflow-hidden' >
+    <div className='  md:flex max-h-full md:max-h-screen   overflow-auto md:overflow-visible  ' >
       <div className="mobilediv">
         <div>
-        <img  src={imageSrc}  alt='hello' className=" mx-auto h-40" />
+        <img  src={imageSrc}  alt='hello' className=" mx-auto h-10 w-20" />
           </div>
           <div >
-          <p className='amount-text'>Payment Ref</p>
-          <h4 className='amount'>{payload.order_id}</h4>
-          <p className='amount-text' style={{marginTop:'1rem'}}>Amount</p>
-          <h4 className='amount'>{convertFormat(payload.currency,payload.amount)}</h4>
+          <p className='font-thin'>Payment Ref</p>
+          <h4 className='mb-5'>{payload.order_id}</h4>
+          <p className='font-thin mt-0'>Amount</p>
+          <h4 className='mb-2'>{convertFormat(payload.currency,payload.amount)}</h4>
           </div>
       </div>
-      <div className='mobilehide' style={{width:'560px'}} >
-        <div className="card   pt-1 min-h-full   text-center  justify-items-center ">
-          <img  src={imageSrc}  alt='hello' className="mx-auto h-30  my-0" />
+      <div className='mobilehide card md:min-h-screen  md:pt-0 md:px-4 w-2/5'   >
+        <div className=" md:p-0      text-center  justify-items-center ">
+          <img  src={imageSrc}  alt='hello' className="mx-auto object-contain md:h-20 2xl:h-40  my-0" />
           <p className='font-thin'>Payment Ref</p>
           <h4 className='mb-5'>{payload.order_id}</h4>
           <p className='font-thin mt-0'>Amount</p>
           <h4 className='mb-20'>{convertFormat(payload.currency,payload.amount)}</h4>
           <div className="svgDiv" />
-          <div className="svgImg  mx-auto">
-            <Svg />
+          <div className="flex justify-center">
+            <Svg/>
           </div>
           <div className="flex justify-center mt-10"   >
                  <img key={'visa'} src="http://www.credit-card-logos.com/images/visa_credit-card-logos/new_visa_medium.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} />
@@ -496,10 +505,8 @@ const {id} =  props.match.params;
                  {/* <img key={'visa'} src="http://www.credit-card-logos.com/images/mastercard_credit-card-logos/mastercard_logo_4.gif" alt='hello' width="50px" align="bottom" style={{ padding: "0 5px" }} /> */}
             </div>
           
-            <p className='font-medium text-xs  my-5 '>
-              Pay the above amount using Open Banking, Safe and Secure. You will
-              be navigated to your Selected Banking app to securely authenticate
-              and make the payment.
+            <p className='font-medium text-xs  my-4 '>
+            All transaction information passed to, and used on, this payment form is encrypted during sending using the latest encryption and hashing techniques available. No personal information (including your card details) is ever passed over the internet or stored on our systems unencrypted.
             </p>
          <span className="linkstyle" onClick={e=>window.location.href='https://admin.zotto.io'} >back to merchant</span>
         </div>
@@ -512,7 +519,7 @@ const {id} =  props.match.params;
     style={{display: "block",border:0,lineHeight:'100%'}}
     />
     </div> */}
-      <div className  className="card flex-shrink-1   md:mx-60    md:my-auto       mb-20 pb-3  mx-4 " >
+      <div className  className="card md:inline-block  md:my-10  mb-40 md:w-3/5 md:pb-0   p-3 md:px-10     md:mx-40  2xl:my-40       mx-4 " >
         <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
           <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
         </Elements>
