@@ -176,15 +176,16 @@ const CheckoutForm = ({payload,setPaymentStatus,router}) => {
       if (result.error) {
             setError(result.error);
 
-          window.location.href=`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`
+          router.history.replace('');
+          window.location(null,null,`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`)
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
      
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-           window.location.href=`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`
-        
+          router.history.replace('');
+          window.history.replaceState(null,null,`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`)
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
 
@@ -463,7 +464,7 @@ const {id} =  props.match.params;
 
 
 
-  if(!loading&&!Object.keys(payload).length) return window.location.href='/';
+  if(!loading&&!Object.keys(payload).length) {window.location.href='/'; return null;}
   if(loading) return <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
  
   </div>;
