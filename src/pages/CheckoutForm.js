@@ -176,14 +176,14 @@ const CheckoutForm = ({payload,setPaymentStatus,router}) => {
       if (result.error) {
             setError(result.error);
 
-          router.history.replace(`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`);
+          window.location.href=`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
      
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-           router.history.replace(`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`);
+           window.location.href=`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`
         
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
