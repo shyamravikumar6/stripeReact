@@ -98,7 +98,7 @@ var cardBrand = {
 //   </button>
 // );
 
-const CheckoutForm = ({payload,setPaymentStatus}) => {
+const CheckoutForm = ({payload,setPaymentStatus,router}) => {
   const stripe = useStripe();
   
   const classes = style();
@@ -120,13 +120,7 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
   })
 
 
- useEffect(()=>{
 
-
-
-
-
- },[brandLogo])
 
 
 
@@ -182,14 +176,14 @@ const CheckoutForm = ({payload,setPaymentStatus}) => {
       if (result.error) {
             setError(result.error);
 
-          window.location.href=`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`
+          router.history.replace(`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`);
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
      
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
-           window.location.href=`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`
+           router.history.replace(`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`);
         
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
@@ -443,7 +437,7 @@ const ElementStripe = (props) => {
   const[imageSrc,setImageSrc]=useState(defaultImage);
 useEffect(()=>{ 
 const {id} =  props.match.params;
-
+ console.log(props);
   axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
           if(res.status==200){
             console.log(res.data.data.transaction,'343')
@@ -520,8 +514,8 @@ const {id} =  props.match.params;
     />
     </div> */}
       <div className  className="card md:inline-block  md:my-10  mb-40 md:w-3/5 md:pb-0   p-3 md:px-10     md:mx-40  2xl:my-40       mx-4 " >
-        <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}>
-          <CheckoutForm  payload={payload}  setPaymentStatus={setPaymentStatus} />
+        <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}  >
+          <CheckoutForm  payload={payload}  router={props} setPaymentStatus={setPaymentStatus} />
         </Elements>
       </div>
     </div>
