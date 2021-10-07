@@ -1,3 +1,1 @@
-export const PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT";
-export const STRIPE_SECRET_KEY="sk_test_51JcMw2Dvlwn29zrnNYJEdKGnQwfVNfNQaAf1CNDrjbXOkqBqfo31UTNB5BDH5lxrUyumuQtk66EnJUB7RDmXZi7t003wZhsYE2";
 export const SERVER_URL=" https://paymentz.z-pay.co.uk";

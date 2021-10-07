@@ -38,9 +38,7 @@ import { convertFormat, createPaymentIntent, emailValidate, getBase64FromUrl } f
 import { deepPurple, purple } from "@material-ui/core/colors";
 import axios from "axios";
 import { SERVER_URL } from "../config";
-const stripePromise = loadStripe(
-  "pk_test_51JcMw2Dvlwn29zrnxjXHEMGdkqYljKlQ5ekd4tLyQEZPQXVFegV36ZGygcgkFqxvlm2WQX06S5g8kdWHCd7piWmz00SeYYkyqT"
-);
+
 
 
 
@@ -153,39 +151,35 @@ const CheckoutForm = ({payload,setPaymentStatus,router}) => {
 
   
     try {
-      let {amount,currency,unique_link_key}=payload;
-      amount=parseInt(amount);
-      const data = await createPaymentIntent({
-        amount,
-        currency,
     
-      });
-      const {client_secret} = data;
       
-      console.log(data);
+     
       delete billingDetails['cardtype'];
-      const result = await stripe.confirmCardPayment(client_secret, {
+      const result = await stripe.confirmCardPayment(payload.stripe_payment_secret, {
         
         payment_method: {
           card: elements.getElement(CardNumberElement),
           billing_details: billingDetails,
         },
       });
-        await axios.post(`${SERVER_URL}/stripe/notification`,{...result.paymentIntent,unique_link_key});
+       const data  = result.error?result.error.payment_intent:result.paymentIntent;
+        await axios.post(`${SERVER_URL}/stripe/notification`,{...data,unique_link_key:payload.unique_link_key});
 
       if (result.error) {
             setError(result.error);
 
+          
+          window.location.href=`https://paymentz.z-pay.co.uk/stripe/failure?unique_link_key=${payload.unique_link_key}`;
           router.history.replace('');
-          window.location(null,null,`https://paymentz.z-pay.co.uk/stripe/failed?unique_link_key=${unique_link_key}`)
         //  Show error to your customer (e.g., insufficient funds)
         //  setError(result.error.message);
      
       } else {
         // The payment has been processed!
         if (result.paymentIntent.status === "succeeded") {
+          
+          window.location.href=`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${payload.unique_link_key}`;
           router.history.replace('');
-          window.history.replaceState(null,null,`https://paymentz.z-pay.co.uk/stripe/success?unique_link_key=${unique_link_key}`)
         }
         else if(result.paymentIntent.status === 'requires_payment_method'){
 
@@ -202,7 +196,7 @@ const CheckoutForm = ({payload,setPaymentStatus,router}) => {
 
 
   return (
-    <form className='mr-0 my-10'   onSubmit={handleSubmit}>
+    <form className='mr-0 my-10 md:my-2  '   onSubmit={handleSubmit}>
      
       <Grid container item xs={12} sm={12} md={12} className='mx-auto' >
       
@@ -400,7 +394,7 @@ const CheckoutForm = ({payload,setPaymentStatus,router}) => {
        {processing?'Processing....':'Pay'}
       </SubmitButton> */}
       {error&&<ErrorMessage setBrandLogo={setBrandLogo}  error={error.message} />}
-      <div   className='flex flex-1 justify-end mb-8'>
+      <div   className='flex flex-1 justify-end mb-1'>
       <Button variant="contained"
       className='h-14 w-full md:w-1/3 2xl:w-1/4 text-nowrap '
   color="primary"
@@ -435,46 +429,57 @@ const ElementStripe = (props) => {
   const [paymentStatus,setPaymentStatus]=useState({})
   const [loading,setLoading]=useState(true);
   const [payload,setPayload]=useState({});
-  const[imageSrc,setImageSrc]=useState(defaultImage);
+
 useEffect(()=>{ 
 const {id} =  props.match.params;
  console.log(props);
-  axios.get(`${SERVER_URL}/api/payment-details/${id}`).then( async(res)=>{
-          if(res.status==200){
-            console.log(res.data.data.transaction,'343')
-            const {transaction:{amount,merchant_id,unique_link_key,currency,order_id,logo,payment_status}} = res.data.data;
+(async()=>{
+
+  try{
+ const response =  await axios.post(`${SERVER_URL}/stripe/create-payment-intent`,{unique_link_key:id});
+ console.log(response);
+ const{stripe_key,stripe_payment_secret} = response.data.data;
+
+ const data1 = await  axios.get(`${SERVER_URL}/api/payment-details/${id}`);
+         
+     if(data1.status==200){
+            console.log(data1,data1.data.data.transaction,'343')
+            const {transaction:{amount,currency,order_id,payment_status,logo}} = data1.data.data;
             if(payment_status!='COMPLETED'){
-             setPayload({...payload,amount,currency,order_id,logo,unique_link_key,merchant_id});
-          
-           const data =  await getBase64FromUrl(`${SERVER_URL}/images/merchant/${merchant_id}`)
-           setImageSrc(data?data:defaultImage);
-            }else{
-              // window.location.href='/'
-            }
-          } 
-    setLoading(false);      
-  }).catch(err=>{  setLoading(false);
-    
+             setPayload({stripe_key,stripe_payment_secret,amount,currency,order_id,logo,unique_link_key:id});}
+             
     // window.location.href='/'
-  });
+            }        
+    // }else {window.location.href='/'}
+
+    setLoading(false);        
+}catch(e){
+
+  setLoading(false);
+  // window.location.href='/';
+}
+
+})()
 
   
 
 },[])
 
 
+useEffect(()=>console.log(payload),[payload])
 
-  if(!loading&&!Object.keys(payload).length) {window.location.href='/'; return null;}
+
+  // if(!loading&&!Object.keys(payload).length) {window.location.href='/'; return null;}
   if(loading) return <div style={{display:'flex', flexDirection:'column', height:'100vh', justifyContent: 'center', alignItems : 'center'}}> <CircularProgress size={70} style={{margin:'auto'}}  />
  
   </div>;
 
   
-  return (
+  return (payload?.stripe_key && payload?.amount ) ? (
     <div className='  md:flex max-h-full md:max-h-screen   overflow-auto md:overflow-visible  ' >
       <div className="mobilediv">
         <div>
-        <img  src={imageSrc}  alt='hello' className=" mx-auto h-10 w-20" />
+        <img  src={payload.logo}  alt='hello' className=" mx-auto h-10 w-20" />
           </div>
           <div >
           <p className='font-thin'>Payment Ref</p>
@@ -485,7 +490,7 @@ const {id} =  props.match.params;
       </div>
       <div className='mobilehide card md:min-h-screen  md:pt-0 md:px-4 w-2/5'   >
         <div className=" md:p-0      text-center  justify-items-center ">
-          <img  src={imageSrc}  alt='hello' className="mx-auto object-contain md:h-20 2xl:h-40  my-0" />
+          <img  src={payload.logo}  alt='hello' className="mx-auto object-contain md:h-20 w-20 2xl:h-40  my-0" />
           <p className='font-thin'>Payment Ref</p>
           <h4 className='mb-5'>{payload.order_id}</h4>
           <p className='font-thin mt-0'>Amount</p>
@@ -515,12 +520,12 @@ const {id} =  props.match.params;
     />
     </div> */}
       <div className  className="card md:inline-block  md:my-10  mb-40 md:w-3/5 md:pb-0   p-3 md:px-10     md:mx-40  2xl:my-40       mx-4 " >
-        <Elements stripe={stripePromise} options={ELEMENTS_OPTIONS}  >
+        <Elements stripe={loadStripe(payload.stripe_key)} options={ELEMENTS_OPTIONS}  >
           <CheckoutForm  payload={payload}  router={props} setPaymentStatus={setPaymentStatus} />
         </Elements>
       </div>
     </div>
-  );
+  ):null;
 };
 
 export default ElementStripe;
